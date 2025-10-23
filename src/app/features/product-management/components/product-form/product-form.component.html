@@ -1,0 +1,52 @@
+<div class="form-container">
+    <h1>Crear Nuevo Producto</h1>
+    <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
+        
+        <!-- Nombre del Producto -->
+        <div class="form-group">
+            <label for="name">Nombre del Producto</label>
+            <input id="name" type="text" formControlName="name">
+            <div *ngIf="productForm.get('name')?.invalid && productForm.get('name')?.touched" class="error-message">
+                El nombre es requerido y debe tener al menos 3 caracteres.
+            </div>
+        </div>
+
+        <!-- Precio -->
+        <div class="form-group">
+            <label for="price">Precio</label>
+            <input id="price" type="number" formControlName="price">
+            <div *ngIf="productForm.get('price')?.invalid && productForm.get('price')?.touched" class="error-message">
+                El precio es requerido y debe ser mayor a 0.
+            </div>
+        </div>
+
+        <!-- Descripción -->
+        <div class="form-group">
+            <label for="description">Descripción</label>
+            <textarea id="description" formControlName="description" rows="4"></textarea>
+            <div *ngIf="productForm.get('description')?.invalid && productForm.get('description')?.touched" class="error-message">
+                La descripción es requerida.
+            </div>
+        </div>
+
+        <!-- Stock -->
+        <div class="form-group">
+            <label for="stock">Stock</label>
+            <input id="stock" type="number" formControlName="stock">
+        </div>
+
+        <!-- Categoría -->
+        <div class="form-group">
+            <label for="category">Categoría (separadas por coma)</label>
+            <input id="category" type="text" formControlName="category">
+        </div>
+
+        <!-- URL de la Imagen -->
+        <div class="form-group">
+            <label for="imageUrl">URL de la Imagen</label>
+            <input id="imageUrl" type="text" formControlName="imageUrl">
+        </div>
+
+        <button type="submit" [disabled]="productForm.invalid" class="submit-btn">Guardar Producto</button>
+    </form>
+</div>

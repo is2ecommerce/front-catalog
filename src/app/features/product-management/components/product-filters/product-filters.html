@@ -1,0 +1,99 @@
+<div class="filters-card" [formGroup]="filterForm">
+  
+  <h2 class="filters-title">Filtros</h2>
+
+  <div class="filter-group">
+    <div class="accordion-header" (click)="toggleAccordion('categories')">
+      <span class="header-label">Categorías</span>
+            <svg class="accordion-icon" [class.rotated]="accordionState['categories']" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+
+    <div class="accordion-content" [class.collapsed]="!accordionState['categories']">
+      <div formArrayName="categories" class="categories-list">
+        <div *ngFor="let category of categories; let i = index" class="checkbox-item">
+          <input type="checkbox" [formControlName]="i" [id]="'cat-' + category">
+          <label [for]="'cat-' + category">
+            {{ category }}
+            <span class="category-count">({{ getCategoryCount(category) }})</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="filter-separator"></div>
+
+  <div class="filter-group">
+    <div class="accordion-header" (click)="toggleAccordion('price')">
+      <span class="header-label">Precio</span>
+      <svg class="accordion-icon" [class.rotated]="accordionState['price']" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+
+    <div class="accordion-content" [class.collapsed]="!accordionState['price']">
+      <div class="price-inputs">
+        <div class="price-input-wrapper">
+          <label for="min-price">Min ($)</label>
+          <input type="number" id="min-price" formControlName="minPrice" min="0">
+        </div>
+        <span class="price-separator">-</span>
+        <div class="price-input-wrapper">
+          <label for="max-price">Max ($)</label>
+          <input type="number" id="max-price" formControlName="maxPrice" min="0">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="filter-separator"></div>
+
+  <div class="filter-group">
+    <div class="accordion-header" (click)="toggleAccordion('sale')">
+      <span class="header-label">Ofertas</span>
+      <svg class="accordion-icon" [class.rotated]="accordionState['sale']" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    
+    <div class="accordion-content" [class.collapsed]="!accordionState['sale']">
+      <div class="checkbox-item">
+        <input type="checkbox" formControlName="onSale" id="on-sale">
+        <label for="on-sale">Solo en promoción</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="filter-separator"></div>
+
+  <div class="filter-group">
+    <div class="accordion-header" (click)="toggleAccordion('rating')">
+      <span class="header-label">Puntuación</span>
+      <svg class="accordion-icon" [class.rotated]="accordionState['rating']" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    
+    <div class="accordion-content" [class.collapsed]="!accordionState['rating']">
+      <select formControlName="minRating" class="rating-select">
+        <option [ngValue]="null">Cualquier puntuación</option>
+        <option [ngValue]="4">4 estrellas o más</option>
+        <option [ngValue]="3">3 estrellas o más</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="filter-separator"></div>
+
+  <div class="filter-group">
+    <div class="accordion-header" (click)="toggleAccordion('availability')">
+      <span class="header-label">Disponibilidad</span>
+      <svg class="accordion-icon" [class.rotated]="accordionState['availability']" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    
+    <div class="accordion-content" [class.collapsed]="!accordionState['availability']">
+      <div class="checkbox-item">
+        <input type="checkbox" formControlName="inStock" id="in-stock">
+        <label for="in-stock">Solo productos en stock</label>
+      </div>
+    </div>
+  </div>
+  
+  <div class="actions-footer">
+    <button (click)="clearFilters()" class="clear-button">Limpiar Filtros</button>
+  </div>
+</div>

@@ -1,0 +1,133 @@
+/* You can add global styles to this file, and also import other style files */
+/* ------------------------------------------------------------------- */
+/* REINICIO DE ESTILOS Y NORMALIZACIÓN */
+/* ------------------------------------------------------------------- */
+
+/* 1. Reinicio Básico (Aplica a todo, incluyendo elementos de componentes) */
+*,
+*::before,
+*::after {
+  box-sizing: border-box; /* Modelo de caja uniforme: padding y border están dentro del ancho/alto */
+  margin: 0;
+  padding: 0;
+}
+
+/* 2. Propiedades de Fuente y Scroll */
+html {
+  /* Scroll suave para la navegación (ej. si usas anclas) */
+  scroll-behavior: smooth; 
+  /* Asegura que el tamaño de fuente se base en un valor legible */
+  font-size: 16px; 
+}
+
+/* 3. Estilos de Tipografía Base */
+body {
+  /* Las propiedades de color y fuente-family se definen en app.component.css, 
+     pero este es un buen lugar para asegurar la herencia */
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased; /* Mejor renderizado en Chrome/Safari */
+}
+
+/* 4. Imágenes y Media */
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* 5. Eliminación de Estilos por Defecto de Elementos de Formulario */
+input,
+button,
+textarea,
+select {
+  font: inherit; /* Hereda las propiedades de fuente del body/html */
+  border: none;
+  background: none;
+  cursor: pointer; /* Hace que los botones sean interactivos por defecto */
+}
+
+/* 6. Enlaces */
+a {
+    color: inherit;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+
+/* 7. Eliminar la decoración de listas */
+ul, ol {
+    list-style: none;
+}
+
+/* ------------------------------------------------------------------- */
+/* DIRECTIVAS DE ANGULAR (Opcional, pero útil) */
+/* ------------------------------------------------------------------- */
+
+/* Estilo para el RouterLink activo */
+.router-link-active {
+    /* Aquí se podría definir un estilo para el enlace activo en la barra de navegación */
+    font-weight: 700;
+}
+
+/* ------------------------------------------------------------------- */
+/* THEME PALETTE & BRAND VARIABLES (Global)                         */
+/* ------------------------------------------------------------------- */
+:root {
+  /* Brand color */
+  --brand: #00AEEF; /* Turquesa brillante solicitado */
+  --brand-foreground: #ffffff;
+
+  /* Backgrounds */
+  --app-background: #F8F8F8; /* Cuerpo principal */
+  --surface: #ffffff; /* Superfícies como tarjetas y sidebars */
+
+  /* Text colors */
+  --text: #111827; /* Gris oscuro / Negro suave */
+  --muted-text: #6B7280;
+
+  /* Borders / shadows */
+  --border: #E5E7EB;
+  --shadow-sm: 0 1px 2px rgba(16,24,40,0.04);
+  --shadow-md: 0 6px 20px rgba(16,24,40,0.08);
+}
+
+/* Apply app background globally */
+
+body {
+  background-color: var(--app-background);
+  color: var(--text);
+  font-family: 'Inter', 'Roboto', Arial, sans-serif;
+  font-size: 1rem;
+}
+
+/* Buttons primary */
+
+.btn-primary {
+  background-color: var(--brand);
+  color: var(--brand-foreground);
+  border: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-family: inherit;
+  font-size: 1rem;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #009ecb;
+  box-shadow: var(--shadow-md);
+}
+
+/* Utility container to center content */
+.container {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}

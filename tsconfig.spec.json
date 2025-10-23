@@ -1,0 +1,21 @@
+/* Extiende la configuración general de TypeScript */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    /* Tipos y librerías necesarias para Jest/Karma/Jasmine */
+    "outDir": "./out-tsc/spec",
+    "types": [
+      "jasmine"
+    ]
+  },
+  "files": [
+    /* Archivos de configuración de pruebas */
+    "src/test.ts",
+    "src/polyfills.ts"
+  ],
+  "include": [
+    /* Todos los archivos de pruebas */
+    "src/**/*.spec.ts",
+    "src/**/*.d.ts"
+  ]
+}

@@ -1,0 +1,132 @@
+/* ------------------------------------------------------------------- */
+/* 1. VARIABLES GLOBALES (CSS CUSTOM PROPERTIES) */
+/* ------------------------------------------------------------------- */
+
+/* Definiciones Base (Fuente, Radio de Borde, Sombra) */
+:root {
+  /* Tipografía */
+  --font-family-sans: 'Inter', sans-serif;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+  
+  /* Layout y Elementos */
+  --radius: 0.5rem; /* Bordes redondeados */
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* ------------------------------------------------------------------- */
+/* 2. DEFINICIÓN DE TEMAS (CLARO Y OSCURO) */
+/* ------------------------------------------------------------------- */
+
+/* --- TEMA CLARO (Defecto) --- */
+.light {
+  /* Colores Principales */
+  --primary: #3b82f6; /* Azul brillante (Botones, Activo) */
+  --primary-foreground: #ffffff; /* Texto sobre el primario */
+  --secondary: #4b5563; /* Gris oscuro (Texto secundario/íconos) */
+  
+  /* Superficies */
+  --background: #f9fafb; /* Fondo principal de la app (Blanco roto) */
+  --foreground: #1f2937; /* Texto principal (Negro oscuro) */
+  --card: #ffffff; /* Fondo de tarjetas/componentes */
+  --card-foreground: #1f2937; /* Texto sobre tarjetas */
+  
+  /* Utilidades */
+  --muted: #f3f4f6; /* Fondo de elementos secundarios (Banners, Hover) */
+  --muted-foreground: #6b7280; /* Texto apagado (Tooltips, Contadores) */
+  --border: #e5e7eb; /* Líneas de separación */
+  --destructive: #ef4444; /* Rojo para descuentos/errores */
+}
+
+/* --- TEMA OSCURO --- */
+.dark {
+  /* Colores Principales */
+  --primary: #60a5fa; 
+  --primary-foreground: #1f2937;
+  --secondary: #e5e7eb; 
+  
+  /* Superficies */
+  --background: #1f2937; 
+  --foreground: #f9fafb; 
+  --card: #374151; 
+  --card-foreground: #f9fafb; 
+  
+  /* Utilidades */
+  --muted: #4b5563; 
+  --muted-foreground: #d1d5db; 
+  --border: #4b5563;
+  --destructive: #f87171; 
+}
+
+/* ------------------------------------------------------------------- */
+/* 3. ESTILOS BASE Y LAYOUT */
+/* ------------------------------------------------------------------- */
+
+/* Estilos para la barra superior */
+.app-topbar {
+  background-color: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.app-topbar h1 {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 1.5rem;
+}
+
+.theme-toggle {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: background-color 0.2s;
+}
+
+.theme-toggle:hover {
+  background-color: color-mix(in srgb, var(--primary) 90%, black);
+}
+
+/* Estilos aplicados al BODY del documento */
+body {
+  font-family: var(--font-family-sans);
+  background-color: var(--background);
+  color: var(--foreground);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Contenedor Principal (Wrapper) de la Router-Outlet */
+.content-wrapper {
+  /* Centra el contenido y le da un ancho máximo */
+  max-width: 1500px; 
+  margin: 0 auto;
+  padding: 1.5rem 2rem 5rem 2rem; 
+  min-height: calc(100vh - 80px); /* Asegura que el contenido ocupe casi toda la pantalla */
+}
+
+/* Estilos del Footer */
+.app-footer {
+  text-align: center;
+  padding: 1rem 0;
+  border-top: 1px solid var(--border);
+  background-color: var(--card);
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+}
+
+/* Estilo para los H1 fuera de los banners */
+h1 {
+  font-size: 2rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--foreground);
+}
