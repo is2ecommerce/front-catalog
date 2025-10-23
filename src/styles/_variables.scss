@@ -1,0 +1,125 @@
+// Variables SCSS para Angular (variables.scss)
+// Convierte las CSS custom properties a variables SCSS para mayor compatibilidad
+
+// Paleta de colores
+$color-primary: #2563eb;
+$color-secondary: #0f172a;
+$color-success: #22c55e;
+$color-error: #e53935;
+$color-warning: #f97316;
+$color-background: #ffffff;
+$color-alt-background: #f8fafc;
+$color-text: #282828;
+$color-text-light: #64748b;
+$color-border: #e0e0e0;
+$color-white: #ffffff;
+$color-black: #000000;
+
+// Tipografía
+$font-main: 'Montserrat', Arial, sans-serif;
+$font-secondary: 'Roboto', Helvetica, sans-serif;
+
+// Tamaños de fuente
+$font-size-title: 2.25rem;      /* 36px */
+$font-size-subtitle: 1.5rem;    /* 24px */
+$font-size-base: 1rem;          /* 16px */
+$font-size-small: 0.875rem;     /* 14px */
+$font-size-large: 1.125rem;     /* 18px */
+
+// Espaciado
+$spacing-xs: 0.25rem;   /* 4px */
+$spacing-sm: 0.5rem;    /* 8px */
+$spacing-md: 1rem;      /* 16px */
+$spacing-lg: 1.5rem;    /* 24px */
+$spacing-xl: 2rem;      /* 32px */
+
+// Breakpoints
+$breakpoint-sm: 576px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 992px;
+$breakpoint-xl: 1200px;
+$breakpoint-xxl: 1400px;
+
+// Bordes y sombras
+$border-radius: 4px;
+$border-radius-lg: 8px;
+$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+$shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+// Z-index
+$z-dropdown: 1000;
+$z-modal: 1050;
+$z-tooltip: 1070;
+$z-navbar: 1030;
+$z-toast: 1080;
+$z-overlay: 1040;
+
+// Transiciones
+$transition-fast: 0.15s ease-in-out;
+$transition-normal: 0.3s ease-in-out;
+$transition-slow: 0.5s ease-in-out;
+
+// Colores adicionales para componentes
+$color-info: #2196f3;
+$color-light: #f8f9fa;
+$color-dark: #343a40;
+$color-muted: #6c757d;
+
+// Espaciado adicional
+$spacing-xxs: 0.125rem;  /* 2px */
+$spacing-xxl: 3rem;      /* 48px */
+$spacing-xxxl: 4rem;     /* 64px */
+
+// Mixins útiles para Angular
+@mixin button-style($bg-color, $text-color: $color-white) {
+  background-color: $bg-color;
+  color: $text-color;
+  font-family: $font-main;
+  font-size: $font-size-base;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $border-radius;
+  border: none;
+  cursor: pointer;
+  transition: $transition-fast;
+  font-weight: 500;
+
+  &:hover {
+    box-shadow: $shadow-sm;
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+@mixin card-style {
+  background: $color-white;
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow-sm;
+  padding: $spacing-md;
+  transition: $transition-normal;
+  border: 1px solid $color-border;
+
+  &:hover {
+    box-shadow: $shadow-md;
+    transform: translateY(-2px);
+  }
+}
+
+@mixin responsive($breakpoint) {
+  @if $breakpoint == sm {
+    @media (max-width: #{$breakpoint-sm - 1px}) { @content; }
+  }
+  @if $breakpoint == md {
+    @media (max-width: #{$breakpoint-md - 1px}) { @content; }
+  }
+  @if $breakpoint == lg {
+    @media (max-width: #{$breakpoint-lg - 1px}) { @content; }
+  }
+  @if $breakpoint == xl {
+    @media (max-width: #{$breakpoint-xl - 1px}) { @content; }
+  }
+}
