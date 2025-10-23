@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ProductService } from '../../services/product.service';
@@ -12,6 +12,9 @@ import { Router } from '@angular/router';
   styleUrls: ['./product-form.component.css']
 })
 export class ProductFormComponent implements OnInit {
+  @Input() product: any = null; // 👈 Añadido para recibir el producto desde el padre
+  @Output() saved = new EventEmitter<any>(); // 👈 Añadido para emitir el evento “saved”
+
   productForm!: FormGroup;
 
   constructor(
@@ -26,17 +29,20 @@ export class ProductFormComponent implements OnInit {
       price: [null, [Validators.required, Validators.min(0.01)]],
       description: ['', [Validators.required, Validators.maxLength(500)]],
       stock: [0, [Validators.required, Validators.min(0)]],
-      // Por ahora, un simple input de texto para las categorías.
-      category: [''], 
+      category: [''],
       imageUrl: ['']
     });
+
+    // Si viene un producto, precargamos el formulario
+    if (this.product) {
+      this.productForm.patchValue(this.product);
+    }
   }
 
   onSubmit(): void {
     if (this.productForm.valid) {
       console.log('Formulario enviado:', this.productForm.value);
-      // Aquí iría la llamada al servicio para guardar el producto.
-      // this.productService.createProduct(this.productForm.value).subscribe(...);
+      this.saved.emit(this.productForm.value); // 👈 Emite el evento al padre
     }
   }
 }

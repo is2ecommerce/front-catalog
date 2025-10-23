@@ -1,0 +1,103 @@
+@import '../../../../../styles/variables';
+@import '../../../../../styles/components';
+
+.products-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $spacing-xl $spacing-md;
+
+  .products-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-lg;
+
+    .section-title {
+      font-family: $font-main;
+      font-size: $font-size-title;
+      color: $color-text;
+    }
+  }
+
+  .modal-backdrop {
+  position: fixed !important;
+  inset: 0; /* top:0; right:0; bottom:0; left:0 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 99999 !important; /* usa valor alto; puede cambiarse por variable si la añades */
+  padding: 1rem;
+  pointer-events: auto;
+  /* evita crear stacking context inesperado */
+  transform: none !important;
+  will-change: auto !important;
+}
+
+/* Contenedor del modal */
+.modal {
+  position: relative;
+  z-index: 100000 !important; /* superior al backdrop */
+  width: 100%;
+  max-width: 900px;
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+/* Modal pequeño (confirmación) */
+.modal.small {
+  max-width: 420px;
+}
+
+/* Estructura interna */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+}
+
+.modal-body {
+  padding: 1rem;
+  max-height: 70vh;
+  overflow: auto;
+  background: transparent;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--border);
+  background: transparent;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: var(--muted-foreground);
+}
+
+/* Botones dentro del modal usando variables globales */
+.btn-secondary {
+  background: var(--muted);
+  color: var(--muted-foreground);
+  border: 1px solid var(--border);
+}
+
+.btn-danger {
+  background: var(--destructive);
+  color: var(--primary-foreground);
+  border: 1px solid color-mix(in srgb, var(--destructive) 80%, black);
+}
+}
