@@ -1,0 +1,33 @@
+<nav *ngIf="totalPages > 1" class="pagination-container">
+    <div class="pagination-info">
+        Mostrando {{ pageSize * currentPage + 1 }} - {{ pageSize * currentPage + pages.length }} de {{ totalItems }} productos
+    </div>
+
+    <div class="pagination-controls">
+        <button 
+            (click)="previousPage()" 
+            [disabled]="currentPage === 0" 
+            class="pagination-button nav-button"
+            aria-label="Página Anterior">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+
+        <ng-container *ngFor="let page of pages">
+            <button 
+                (click)="goToPage(page)" 
+                [class.active]="page === currentPage" 
+                class="pagination-button page-number-button"
+                aria-label="Ir a la página {{ page + 1 }}">
+                {{ page + 1 }}
+            </button>
+        </ng-container>
+
+        <button 
+            (click)="nextPage()" 
+            [disabled]="currentPage === totalPages - 1" 
+            class="pagination-button nav-button"
+            aria-label="Página Siguiente">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+    </div>
+</nav>

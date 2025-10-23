@@ -1,0 +1,146 @@
+:host {
+    /* Usar display: block es necesario para que el margen superior funcione correctamente en el componente. */
+    display: block; 
+}
+
+/* 2. Banner */
+.banner {
+    background: linear-gradient(90deg, rgba(0,174,239,0.08), rgba(0,174,239,0.02));
+    padding: 2rem 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.25rem;
+    color: var(--foreground);
+    text-align: center;
+}
+
+.banner h1 {
+    margin: 0 0 0.5rem 0;
+}
+
+/* 3. Área de Contenido Principal: Rejilla de Dos Columnas */
+.main-content-area {
+    display: grid;
+    /* 🚨 CLAVE: Asegura que el grid ocupe todo el ancho disponible de su contenedor padre. */
+    width: 100%;
+    /* La clave: Columna de filtros de 300px y columna de productos que toma el resto (1fr). */
+    grid-template-columns: 300px 1fr;
+    gap: 1.5rem;
+    /* Asegura que ambas columnas empiecen en la parte superior. */ 
+    align-items: start; 
+    /* 🚨 CLAVE: Alinea todo el grid a la izquierda de su contenedor. */
+    justify-content: start;
+}
+
+/* 4. Columna Izquierda (Filtros) */
+.filter-sidebar {
+    /* El ancho es controlado por la columna del grid (300px), no es necesario un width aquí. */
+    background: transparent; /* la tarjeta dentro tiene fondo blanco */
+    flex-direction: column;
+}
+
+/* 5. Columna Derecha (Productos y Controles) */
+.product-grid-area {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    /* 🚨 CLAVE: Asegura que esta área ocupe todo el ancho de su columna en el grid. */
+    width: 100%;
+    /* 🚨 CLAVE: Evita que el contenido interno (como la rejilla) se desborde y rompa el layout del grid. */
+    min-width: 0;
+}
+
+.top-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.controls-right {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.view-toggle {
+    display: flex;
+    background-color: var(--muted);
+    border-radius: var(--radius);
+    padding: 0.25rem;
+}
+
+.view-toggle button {
+    background: none;
+    border: none;
+    padding: 0.001rem;
+    color: var(--secondary); /* Color gris por defecto */
+    cursor: pointer;
+    border-radius: 0.5rem; /* Radio ligeramente menor que el contenedor */
+    transition: all 0.2s ease-in-out;
+}
+
+.view-toggle button.active {
+    background-color: var(--primary); /* Fondo azul */
+    color: var(--primary-foreground); /* Icono blanco */
+    box-shadow: var(--shadow-sm);
+}
+
+.view-toggle button svg {
+    width: 1.5rem; /* Iconos más pequeños */
+    height: 1.5rem;
+}
+
+.product-count {
+    font-weight: 600;
+}
+
+/* 6. Rejilla de Productos (Modo Tarjeta) */
+.product-grid {
+    display: grid;
+    /* Responsive: mínimo 220px por tarjeta, máximo 1fr. */
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+/* 7. Vista de Lista */
+.product-list-view {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* 8. Estilos para el mensaje de No Resultados */
+.no-results {
+    grid-column: 1 / -1; /* Ocupa todo el ancho del grid */
+    text-align: center;
+    padding: 2rem;
+    font-size: 1.125rem;
+    color: var(--muted-text);
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+}
+
+/* 9. Alineación del Footer de Paginación */
+.pagination-footer {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+/* 10. Responsive: Columnas Apiladas en Pantallas Pequeñas */
+@media (max-width: 900px) {
+    .main-content-area {
+        grid-template-columns: 1fr; /* Una sola columna */
+    }
+
+    .filter-sidebar {
+        order: 2; /* Los filtros van debajo del contenido en móviles */
+    }
+}
+
+@media (max-width: 480px) {
+    .product-grid {
+        grid-template-columns: 1fr; /* Una sola tarjeta por fila en móviles muy pequeños */
+    }
+}

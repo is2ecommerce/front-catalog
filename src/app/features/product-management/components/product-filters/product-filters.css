@@ -1,0 +1,189 @@
+/* ------------------------------------------------------------------- */
+/* 1. Contenedor Principal (Simula una tarjeta para los filtros) */
+/* ------------------------------------------------------------------- */
+.filters-card {
+    /* 🚨 CLAVE DE MAQUETACIÓN: Limita el ancho del panel para el layout de 2 columnas */
+    width: 100%; /* El ancho ahora es controlado por el contenedor padre (.filter-sidebar) */
+    box-sizing: border-box; /* Asegura que padding no aumente el ancho total */
+    
+    /* Variables de Tema ajustadas a las definidas en app.component.css */
+    background-color: var(--card); /* Usar --card en lugar de --surface */
+    border: 1px solid var(--border);
+    border-radius: var(--radius); /* Usar la variable global --radius */
+    padding: 1.5rem; /* Aumentar ligeramente el padding interno */
+    color: var(--foreground); /* Usar --foreground en lugar de --text */
+}
+
+.filters-title {
+    font-size: 1.25rem;
+    font-weight: var(--font-weight-bold); /* Usar la variable */
+    margin-bottom: 1.5rem;
+    color: var(--foreground);
+}
+
+/* ------------------------------------------------------------------- */
+/* 2. Acordeón / Grupo de Filtros */
+/* ------------------------------------------------------------------- */
+.filter-group {
+    padding: 0.75rem 0;
+}
+
+.filter-separator {
+    border-top: 1px solid var(--border);
+    margin: 0.5rem 0;
+}
+
+.accordion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding: 0.5rem 0;
+}
+
+.header-label {
+    font-weight: var(--font-weight-medium);
+    font-size: 1rem;
+}
+
+.accordion-icon {
+    /* Usamos 'stroke' para SVG */
+    stroke: var(--secondary); /* Color basado en el tema */
+    transition: transform 0.3s ease;
+}
+
+/* 🚨 CLAVE: Gira 180deg para que el acordeón se abra hacia abajo, consistente con el HTML */
+.accordion-icon.rotated {
+    transform: rotate(180deg); 
+}
+
+/* ------------------------------------------------------------------- */
+/* 3. Contenido Colapsable */
+/* ------------------------------------------------------------------- */
+.accordion-content {
+    /* 🚨 CLAVE: Se reduce la altura máxima para que el componente no sea tan largo. */
+    max-height: 200px;
+    overflow: hidden;
+    transition: max-height 0.4s ease-in-out, opacity 0.4s ease-in-out;
+    opacity: 1;
+    padding-top: 0.5rem;
+}
+
+.accordion-content.collapsed {
+    max-height: 0;
+    opacity: 0;
+    padding-top: 0;
+}
+
+/* ------------------------------------------------------------------- */
+/* 4. Estilos de Checkbox y Categorías */
+/* ------------------------------------------------------------------- */
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    padding: 0.25rem 0;
+}
+
+.checkbox-item input[type="checkbox"] {
+    /* Separar el checkbox del label */
+    margin-right: 0.5rem; 
+    accent-color: var(--primary); /* Estilo de Angular por defecto */
+}
+
+.checkbox-item label {
+    display: flex;
+    align-items: center;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    color: var(--card-foreground);
+    /* Se quitó margin-left para que la etiqueta esté al lado del checkbox */
+}
+
+.category-count {
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+    margin-left: 0.5rem; /* Ajustar el margen del contador */
+}
+
+/* ------------------------------------------------------------------- */
+/* 5. Estilos de Inputs de Precio */
+/* ------------------------------------------------------------------- */
+.price-inputs {
+    display: flex;
+    align-items: flex-end; /* Alinear los inputs por la base */
+    gap: 0.5rem;
+}
+
+.price-input-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.price-input-wrapper label {
+    font-size: 0.8rem;
+    color: var(--muted-foreground);
+    margin-bottom: 0.2rem;
+}
+
+.price-inputs input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius); /* Usar la variable global */
+    background-color: var(--background); /* Mejor usar background para inputs */
+    color: var(--foreground);
+    text-align: center;
+}
+
+.price-separator {
+    color: var(--muted-foreground);
+    font-size: 1.25rem;
+    /* Eliminar margin-top: 1rem, ya que los inputs están alineados */
+}
+
+/* ------------------------------------------------------------------- */
+/* 5.5. Estilos para el Selector de Puntuación */
+/* ------------------------------------------------------------------- */
+.rating-select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background-color: var(--background);
+    color: var(--foreground);
+    cursor: pointer;
+}
+
+/* ------------------------------------------------------------------- */
+/* 6. Pie de Página de Acciones */
+/* ------------------------------------------------------------------- */
+.actions-footer {
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    margin-top: 1rem;
+}
+
+.clear-button {
+    width: 100%;
+    background-color: var(--muted);
+    color: var(--secondary);
+    padding: 0.75rem;
+    border: none;
+    border-radius: var(--radius);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.clear-button:hover {
+    background-color: var(--border); /* Usar una variable segura para el hover */
+}
+
+/* Estilos para que se muestre como bloque completo en móvil */
+@media (max-width: 900px) {
+    .filters-card {
+        max-width: 100%; /* Ocupa todo el ancho disponible */
+        margin-top: 1rem;
+    }
+}

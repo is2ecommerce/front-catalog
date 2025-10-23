@@ -1,0 +1,70 @@
+<div class="banner">
+  <h1>Descubre la mejor tecnología</h1>
+  <p>Productos innovadores al mejor precio. Encuentra todo lo que necesitas para tu setup perfecto.</p>
+</div>
+
+<div class="main-content-area">
+ <div class="filter-sidebar">
+   <app-product-filters 
+      #filterComponent
+      [categories]="categories"
+      [getCategoryCount]="getCategoryCount"
+      (filtersChange)="onFiltersChange($event)">
+  </app-product-filters>
+ </div>
+
+ <div class="product-grid-area">
+    <div class="top-controls" *ngIf="paginatedResponse$ | async as response">
+      <span class="product-count">{{ response.totalElements }} productos</span>
+      
+      <div class="controls-right">
+        <div class="view-toggle">
+                    <button (click)="setViewMode('grid')" [class.active]="viewMode === 'grid'">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+          </button>
+          <button (click)="setViewMode('list')" [class.active]="viewMode === 'list'">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+          </button>
+        </div>
+
+        <div class="sort-selector">
+          <label for="sort-by">Ordenar por:</label>
+          <select id="sort-by" #sortSelect (change)="onSortChange(sortSelect.value)">
+            <option value="featured">Destacados</option>
+            <option value="price-asc">Precio: más bajo</option>
+            <option value="price-desc">Precio: más alto</option>
+            <option value="name-asc">Nombre: A-Z</option>
+            <option value="name-desc">Nombre: Z-A</option>
+            </select>
+        </div>
+      </div>
+    </div>
+
+    <div [ngClass]="{'product-grid': viewMode === 'grid', 'product-list-view': viewMode === 'list'}">
+      
+      <ng-container *ngIf="products$ | async as products">
+        <div *ngIf="products.length === 0" class="no-results">
+            No se encontraron productos que coincidan con los filtros o búsqueda.
+        </div>
+        
+        <app-product-card 
+          *ngFor="let product of products" 
+          [product]="product"
+        ></app-product-card>
+      </ng-container>
+      
+    </div>
+    
+    <div class="pagination-footer" *ngIf="paginatedResponse$ | async as response">
+        <app-pagination-bar
+            [currentPage]="response.number"
+            [totalPages]="response.totalPages"
+            [totalItems]="response.totalElements"
+            [pageSize]="response.size"
+            (pageChange)="onPageChange($event)">
+      </app-pagination-bar>
+    </div>
+
+  </div>
+
+</div>

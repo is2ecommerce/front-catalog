@@ -1,0 +1,110 @@
+/* ------------------------------------------------------------------- */
+/* 1. Contenedor Principal del Encabezado */
+/* ------------------------------------------------------------------- */
+.user-header {
+    background-color: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: var(--shadow-sm);
+}
+
+.header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+
+/* ------------------------------------------------------------------- */
+/* 2. Logo */
+/* ------------------------------------------------------------------- */
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--foreground);
+}
+
+.logo img {
+    height: 2.5rem; /* 40px */
+    width: auto;
+}
+
+.logo span {
+    font-size: 1.5rem;
+    font-weight: var(--font-weight-bold);
+}
+
+/* ------------------------------------------------------------------- */
+/* 3. Área Central (Búsqueda) */
+/* ------------------------------------------------------------------- */
+.center-area {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.search-form {
+    display: flex;
+    align-items: center;
+    max-width: 600px; /* 🚨 CLAVE: Se aumenta el ancho máximo */
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.search-form input[type="search"] {
+    flex-grow: 1;
+    padding: 0.75rem 1rem;
+    border: none;
+    /* 🚨 CLAVE: Se ajusta el degradado para que inicie más claro */
+    background: linear-gradient(90deg, rgba(0,174,239,0.03), rgba(0,174,239,0.01));
+    color: var(--foreground);
+    outline: none;
+}
+
+/* 🚨 ESTILO PARA EL BOTÓN DE BÚSQUEDA */
+.search-form .icon-btn {
+    background-color: var(--primary); /* Color azul */
+    color: var(--primary-foreground); /* Color blanco para el ícono */
+    padding: 0.75rem;
+    border-radius: 0; /* Sin borde redondeado para que se pegue al input */
+    transition: background-color 0.2s;
+}
+
+.search-form .icon-btn:hover {
+    background-color: color-mix(in srgb, var(--primary) 90%, black);
+}
+
+/* ------------------------------------------------------------------- */
+/* 4. Área Derecha (Iconos de Usuario y Carrito) */
+/* ------------------------------------------------------------------- */
+.right-area {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    color: var(--secondary);
+    padding: 0.5rem;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.icon-btn:hover {
+    background-color: var(--muted);
+    color: var(--primary);
+}
+
+.icon-btn svg {
+    width: 1.5rem; /* 24px */
+    height: 1.5rem;
+}

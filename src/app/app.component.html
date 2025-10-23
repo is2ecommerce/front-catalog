@@ -1,0 +1,15 @@
+<div [class]="currentTheme">
+  <header>
+    <!-- El encabezado de usuario contiene la barra de navegación, búsqueda, etc. -->
+    <app-user-header (logoClick)="toggleTheme()">
+    </app-user-header>
+  </header>
+
+  <main class="content-wrapper">
+    <router-outlet></router-outlet>
+  </main>
+
+  <footer class="app-footer">
+    <p>&copy; {{ currentYear }} TechStore - Tu tienda tecnológica.</p>
+  </footer>
+</div>
