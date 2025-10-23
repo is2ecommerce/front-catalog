@@ -15,6 +15,48 @@ $color-border: #e0e0e0;
 $color-white: #ffffff;
 $color-black: #000000;
 
+
+
+/* --- TEMA CLARO (Defecto) --- */
+.light {
+  /* Colores Principales */
+  --primary: #{$color-primary};
+  --primary-foreground: #{$color-white};
+  --secondary: #4b5563;
+  
+  /* Superficies */
+  --background: #{$color-alt-background};
+  --foreground: #{$color-text};
+  --card: #{$color-white};
+  --card-foreground: #{$color-text};
+  
+  /* Utilidades */
+  --muted: #f3f4f6;
+  --muted-foreground: #{$color-text-light};
+  --border: #{$color-border};
+  --destructive: #{$color-error};
+}
+
+/* --- TEMA OSCURO --- */
+.dark {
+  /* Colores Principales */
+  --primary: #60a5fa; 
+  --primary-foreground: #1f2937;
+  --secondary: #e5e7eb; 
+  
+  /* Superficies */
+  --background: #1f2937; 
+  --foreground: #f9fafb; 
+  --card: #374151; 
+  --card-foreground: #f9fafb; 
+  
+  /* Utilidades */
+  --muted: #4b5563; 
+  --muted-foreground: #d1d5db; 
+  --border: #4b5563;
+  --destructive: #f87171; 
+}
+
 // Tipografía
 $font-main: 'Montserrat', Arial, sans-serif;
 $font-secondary: 'Roboto', Helvetica, sans-serif;
@@ -69,6 +111,18 @@ $color-muted: #6c757d;
 $spacing-xxs: 0.125rem;  /* 2px */
 $spacing-xxl: 3rem;      /* 48px */
 $spacing-xxxl: 4rem;     /* 64px */
+
+
+:root {
+  /* Mantenemos las custom properties para el cambio dinámico de temas */
+  --font-family-sans: #{$font-main};
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+  
+  --radius: #{$border-radius};
+  --shadow-lg: #{$shadow-md};
+}
 
 // Mixins útiles para Angular
 @mixin button-style($bg-color, $text-color: $color-white) {

@@ -7,15 +7,22 @@
   </div>
 
   <div class="products-header">
-    <h2 class="section-title">Gestión de Productos</h2>
+    <div class="title-row">
+      <h2 class="section-title">Gestión de Productos</h2>
+      <button class="btn create-product-header" (click)="openCreate()">
+        <i class="bi bi-plus-lg"></i> Crear producto
+      </button>
+   </div>
 
-    <div class="view-toggle">
-      <button class="view-btn" [class.active]="viewMode === 'grid'" (click)="setView('grid')">
-        <i class="bi bi-grid"></i>
-      </button>
-      <button class="view-btn" [class.active]="viewMode === 'list'" (click)="setView('list')">
-        <i class="bi bi-list"></i>
-      </button>
+    <div class="header-controls">
+      <div class="view-toggle">
+        <button class="view-btn" [class.active]="viewMode === 'grid'" (click)="setView('grid')">
+          <i class="bi bi-grid"></i>
+        </button>
+        <button class="view-btn" [class.active]="viewMode === 'list'" (click)="setView('list')">
+          <i class="bi bi-list"></i>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -37,13 +44,6 @@
     <div *ngFor="let producto of productos" class="product-card product-item">
       <div class="product-image">
         <img [src]="producto.imagen" [alt]="producto.nombre" />
-        <div class="product-overlay">
-          <div class="quick-actions">
-            <button class="btn btn-outline btn-icon" (click)="verDetalle(producto)">
-              <i class="bi bi-eye"></i>
-            </button>
-          </div>
-        </div>
       </div>
 
       <div class="product-info">
@@ -73,11 +73,11 @@
   </div>
 </div>
 
-<!-- Modal Editar -->
+<!-- Modal Editar / Crear -->
 <div class="modal-backdrop" *ngIf="showEditModal">
-  <div class="modal">
+  <div class="modal" role="dialog" aria-modal="true">
     <header class="modal-header">
-      <h3>Editar Producto</h3>
+      <h3>{{ selectedProduct ? 'Editar Producto' : 'Crear Producto' }}</h3>
       <button class="close-btn" (click)="closeEdit()">&times;</button>
     </header>
     <section class="modal-body">
@@ -91,7 +91,7 @@
 
 <!-- Modal Eliminar -->
 <div class="modal-backdrop" *ngIf="showDeleteModal">
-  <div class="modal small">
+  <div class="modal small" role="dialog" aria-modal="true">
     <header class="modal-header">
       <h3>Confirmar Eliminación</h3>
       <button class="close-btn" (click)="closeDelete()">&times;</button>

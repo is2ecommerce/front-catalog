@@ -66,6 +66,11 @@ export class ProductsAdminComponent implements OnInit {
     // implementar si se desea ver detalle
   }
 
+  openCreate() {
+    this.selectedProduct = null;
+    this.showEditModal = true;
+  }
+
   openEdit(product: any) {
     this.selectedProduct = { ...product };
     this.showEditModal = true;
@@ -77,22 +82,49 @@ export class ProductsAdminComponent implements OnInit {
   }
 
   onProductSaved(updated: any) {
-    const id = updated.id ?? updated._id;
-    const idx = this.productos.findIndex(p => (p.id ?? p._id) === id);
-    if (idx > -1) {
-      this.productos[idx] = { ...this.productos[idx], ...updated };
-    } else {
-      if (!id) updated.id = String(Date.now());
-      this.productos.unshift(updated);
+    const idCandidate = updated.id ?? updated._id ?? this.selectedProduct?.id ?? this.selectedProduct?._id;
+
+    let idx = -1;
+    if (idCandidate) {
+      idx = this.productos.findIndex(p => (p.id ?? p._id) === idCandidate);
     }
 
-    if (this.productService && typeof (this.productService as any).update === 'function' && (updated.id ?? updated._id)) {
-      (this.productService as any).update(updated.id ?? updated._id, updated).subscribe(() => {}, () => {});
-    } else if (this.productService && typeof (this.productService as any).create === 'function' && !(updated.id ?? updated._id)) {
-      (this.productService as any).create(updated).subscribe(() => {}, () => {});
+    if (idx === -1) {
+      idx = this.productos.findIndex(p =>
+        (p.nombre ?? p.name ?? '').toString() === (updated.nombre ?? updated.name ?? '').toString()
+        && (p.precio ?? p.price ?? '').toString() === (updated.precio ?? updated.price ?? '').toString()
+      );
     }
 
-    this.closeEdit();
+    const applyUpdated = (result: any) => {
+      if (idx > -1) {
+        this.productos[idx] = { ...this.productos[idx], ...result };
+      } else {
+        if (!(result.id ?? result._id)) result.id = String(Date.now());
+        this.productos.unshift(result);
+      }
+      this.closeEdit();
+    };
+
+    if (this.productService) {
+      if (idCandidate && typeof (this.productService as any).update === 'function') {
+        (this.productService as any).update(idCandidate, updated).subscribe((res: any) => {
+          applyUpdated(res ?? updated);
+        }, () => {
+          applyUpdated(updated);
+        });
+        return;
+      } else if (!idCandidate && typeof (this.productService as any).create === 'function') {
+        (this.productService as any).create(updated).subscribe((res: any) => {
+          applyUpdated(res ?? updated);
+        }, () => {
+          applyUpdated(updated);
+        });
+        return;
+      }
+    }
+
+    applyUpdated(updated);
   }
 
   openDelete(product: any) {

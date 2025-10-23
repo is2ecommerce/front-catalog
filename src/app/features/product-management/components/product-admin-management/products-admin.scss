@@ -1,35 +1,160 @@
 @import '../../../../../styles/variables';
-@import '../../../../../styles/components';
 
+/* Contenedor */
 .products-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: $spacing-xl $spacing-md;
+  padding: 1rem;
+}
 
-  .products-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: $spacing-lg;
 
-    .section-title {
-      font-family: $font-main;
-      font-size: $font-size-title;
-      color: $color-text;
-    }
-  }
 
-  .modal-backdrop {
+.products-header {
+  /* asegurar layout del título + botón */
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+/* botón principal en la cabecera (más compacto que new-product-btn) */
+.create-product-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: 1px solid color-mix(in srgb, var(--primary) 80%, black);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* Header controls (nuevo producto + toggle) */
+.header-controls {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Botón nuevo producto */
+.new-product-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: 1px solid color-mix(in srgb, var(--primary) 80%, black);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* Grid / List */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.products-list {
+  display: block;
+}
+
+/* Tarjeta de producto */
+.product-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-image img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+.product-info {
+  padding: 0.75rem 1rem;
+}
+
+.product-title {
+  margin: 0.25rem 0;
+  font-size: 1.1rem;
+}
+
+.product-description {
+  font-size: 0.95rem;
+  color: var(--muted-foreground);
+  margin: 0.5rem 0;
+}
+
+.product-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.product-stock {
+  color: var(--muted-foreground);
+  font-size: 0.95rem;
+}
+
+/* Botones admin (mismo tamaño) */
+.admin-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-edit {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: color-mix(in srgb, var(--primary) 80%, black);
+}
+
+.btn-delete {
+  background: var(--destructive);
+  color: var(--primary-foreground);
+  border-color: color-mix(in srgb, var(--destructive) 80%, black);
+}
+
+/* Modal: forzar overlay sobre todo usando variables globales */
+.modal-backdrop {
   position: fixed !important;
-  inset: 0; /* top:0; right:0; bottom:0; left:0 */
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 99999 !important; /* usa valor alto; puede cambiarse por variable si la añades */
+  z-index: 99999 !important;
   padding: 1rem;
   pointer-events: auto;
-  /* evita crear stacking context inesperado */
   transform: none !important;
   will-change: auto !important;
 }
@@ -37,7 +162,7 @@
 /* Contenedor del modal */
 .modal {
   position: relative;
-  z-index: 100000 !important; /* superior al backdrop */
+  z-index: 100000 !important;
   width: 100%;
   max-width: 900px;
   background: var(--card);
@@ -49,12 +174,10 @@
   pointer-events: auto;
 }
 
-/* Modal pequeño (confirmación) */
 .modal.small {
   max-width: 420px;
 }
 
-/* Estructura interna */
 .modal-header {
   display: flex;
   align-items: center;
@@ -100,4 +223,16 @@
   color: var(--primary-foreground);
   border: 1px solid color-mix(in srgb, var(--destructive) 80%, black);
 }
+
+/* Ajustes responsivos */
+@media (max-width: 640px) {
+  
+  .header-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .new-product-btn {
+    width: 100%;
+    justify-content: center;
+  }
 }

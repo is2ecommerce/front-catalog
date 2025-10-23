@@ -7,59 +7,6 @@
 /* ------------------------------------------------------------------- */
 /* 2. DEFINICIÓN DE TEMAS (CLARO Y OSCURO) */
 /* ------------------------------------------------------------------- */
-
-/* Definiciones Base */
-:root {
-  /* Mantenemos las custom properties para el cambio dinámico de temas */
-  --font-family-sans: #{$font-main};
-  --font-weight-normal: 400;
-  --font-weight-medium: 500;
-  --font-weight-bold: 700;
-  
-  --radius: #{$border-radius};
-  --shadow-lg: #{$shadow-md};
-}
-
-/* --- TEMA CLARO (Defecto) --- */
-.light {
-  /* Colores Principales */
-  --primary: #{$color-primary};
-  --primary-foreground: #{$color-white};
-  --secondary: #4b5563;
-  
-  /* Superficies */
-  --background: #{$color-alt-background};
-  --foreground: #{$color-text};
-  --card: #{$color-white};
-  --card-foreground: #{$color-text};
-  
-  /* Utilidades */
-  --muted: #f3f4f6;
-  --muted-foreground: #{$color-text-light};
-  --border: #{$color-border};
-  --destructive: #{$color-error};
-}
-
-/* --- TEMA OSCURO --- */
-.dark {
-  /* Colores Principales */
-  --primary: #60a5fa; 
-  --primary-foreground: #1f2937;
-  --secondary: #e5e7eb; 
-  
-  /* Superficies */
-  --background: #1f2937; 
-  --foreground: #f9fafb; 
-  --card: #374151; 
-  --card-foreground: #f9fafb; 
-  
-  /* Utilidades */
-  --muted: #4b5563; 
-  --muted-foreground: #d1d5db; 
-  --border: #4b5563;
-  --destructive: #f87171; 
-}
-
 /* ------------------------------------------------------------------- */
 /* 3. ESTILOS BASE Y LAYOUT */
 /* ------------------------------------------------------------------- */
