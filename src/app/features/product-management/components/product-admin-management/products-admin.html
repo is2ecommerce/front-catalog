@@ -23,6 +23,10 @@
           <i class="bi bi-list"></i>
         </button>
       </div>
+
+      <button class="btn btn-log" (click)="openChangeLog()">
+        <i class="bi bi-clock-history"></i> Ver historial
+      </button>
     </div>
   </div>
 
@@ -102,6 +106,38 @@
     <footer class="modal-footer">
       <button class="btn btn-danger" (click)="confirmDelete()">Eliminar</button>
       <button class="btn btn-secondary" (click)="closeDelete()">Cancelar</button>
+    </footer>
+  </div>
+</div>
+
+<div class="modal-backdrop" *ngIf="showChangeLogModal">
+  <div class="modal small" role="dialog" aria-modal="true">
+    <header class="modal-header">
+      <h3>Historial de cambios</h3>
+      <button class="close-btn" (click)="closeChangeLog()">&times;</button>
+    </header>
+    <section class="modal-body">
+      <div *ngIf="changeLogEntries?.length; else noLog">
+        <ul class="changelog-list">
+          <li *ngFor="let e of changeLogEntries" class="changelog-item">
+            <div class="changelog-meta">
+              <strong>{{ e.action }}</strong> — {{ e.user ?? 'Sistema' }} · {{ e.date | date:'short' }}
+            </div>
+            <div class="changelog-message">{{ e.message }}</div>
+            <ul *ngIf="e.details?.length" class="changelog-details">
+              <li *ngFor="let d of e.details">
+                <strong>{{ d.field }}</strong>: <span class="from">{{ d.from }}</span> → <span class="to">{{ d.to }}</span>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+      <ng-template #noLog>
+        <p>No hay entradas en el historial.</p>
+      </ng-template>
+    </section>
+    <footer class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeChangeLog()">Cerrar</button>
     </footer>
   </div>
 </div>

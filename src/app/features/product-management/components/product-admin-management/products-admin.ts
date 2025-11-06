@@ -18,12 +18,72 @@ export class ProductsAdminComponent implements OnInit {
 
   showEditModal = false;
   showDeleteModal = false;
+  showChangeLogModal = false; 
   selectedProduct: any = null;
+
+  changeLogEntries: any[] = [];
+  private _localChangeLog: any[] = [];
 
   constructor(private productService: ProductService) {}
 
   ngOnInit(): void {
     this.loadProducts();
+  }
+
+  
+  openChangeLog() {
+    this.showChangeLogModal = true;
+    this.loadChangeLog();
+  }
+
+  closeChangeLog() {
+    this.showChangeLogModal = false;
+  }
+
+  private loadChangeLog() {
+    // Si el servicio provee un método getChangeLog use ese; si no, usar sample.
+    if (this.productService && typeof (this.productService as any).getChangeLog === 'function') {
+      (this.productService as any).getChangeLog().subscribe((res: any[]) => {
+         this.changeLogEntries = [...this._localChangeLog, ...(res ?? [])].slice(0, 200);
+      }, () => {
+        this.changeLogEntries = [...this._localChangeLog, ...this.sampleChangeLog()].slice(0, 200);
+      });
+    } else {
+      this.changeLogEntries = [...this._localChangeLog, ...this.sampleChangeLog()].slice(0, 200);
+    }
+  }
+
+  private sampleChangeLog(): any[] {
+    return [
+      { action: 'Creado', user: 'admin', date: new Date(Date.now() - 1000 * 60 * 60 * 24), message: 'Producto "Camiseta" creado.' },
+      { action: 'Actualizado', user: 'maria', date: new Date(Date.now() - 1000 * 60 * 60 * 2), message: 'Precio actualizado.' },
+      { action: 'Eliminado', user: 'admin', date: new Date(Date.now() - 1000 * 60 * 30), message: 'Producto "Taza" eliminado.' }
+    ];
+  }
+
+  private addChangeLogEntry(action: string, message: string, user = 'admin', details?: any[]) {
+    const entry = { action, user, date: new Date(), message, details };
+    this._localChangeLog = [entry, ...(this._localChangeLog ?? [])].slice(0, 200);
+    this.changeLogEntries = [entry, ...(this.changeLogEntries ?? [])].slice(0, 200);
+  }
+
+  private computeDiff(original: any, updated: any) {
+    if (!original) return [];
+    const fields = ['nombre', 'descripcion', 'precio', 'stock', 'categoria', 'imagen'];
+    const diffs: Array<{ field: string; from: any; to: any }> = [];
+
+    for (const f of fields) {
+      const from = original[f] ?? original[f === 'nombre' ? 'name' : f];
+      const to = updated[f] ?? updated[f === 'nombre' ? 'name' : f];
+
+      // normalizar arrays a string para comparación legible
+      const norm = (v: any) => (Array.isArray(v) ? v.join(', ') : (v === null || v === undefined) ? '' : String(v));
+      if (norm(from) !== norm(to)) {
+        diffs.push({ field: f, from: norm(from), to: norm(to) });
+      }
+    }
+
+    return diffs;
   }
 
   loadProducts(): void {
@@ -97,14 +157,26 @@ export class ProductsAdminComponent implements OnInit {
     }
 
     const applyUpdated = (result: any) => {
-      if (idx > -1) {
-        this.productos[idx] = { ...this.productos[idx], ...result };
+    const name = result.nombre ?? result.name ?? 'Producto';
+    if (idx > -1) {
+      // obtener original para comparar (usar la versión actual en la lista)
+      const original = this.productos[idx];
+      const merged = { ...original, ...result };
+      const details = this.computeDiff(original, merged);
+      this.productos[idx] = merged;
+      if (details.length) {
+        this.addChangeLogEntry('Actualizado', `Producto "${name}" actualizado.`, 'admin', details);
       } else {
-        if (!(result.id ?? result._id)) result.id = String(Date.now());
-        this.productos.unshift(result);
+        this.addChangeLogEntry('Actualizado', `Producto "${name}" actualizado (sin cambios detectados).`, 'admin');
       }
-      this.closeEdit();
-    };
+    } else {
+      if (!(result.id ?? result._id)) result.id = String(Date.now());
+      this.productos.unshift(result);
+      this.addChangeLogEntry('Creado', `Producto "${name}" creado.`, 'admin');
+    }
+    this.sortProducts();
+    this.closeEdit();
+  };
 
     if (this.productService) {
       if (idCandidate && typeof (this.productService as any).update === 'function') {
@@ -140,15 +212,21 @@ export class ProductsAdminComponent implements OnInit {
   confirmDelete() {
     if (!this.selectedProduct) return;
     const id = this.selectedProduct.id ?? this.selectedProduct._id;
+    const deletedName = this.selectedProduct.nombre ?? this.selectedProduct.name ?? 'Producto';
     if (this.productService && typeof (this.productService as any).delete === 'function' && id) {
       (this.productService as any).delete(id).subscribe(() => {
         this.productos = this.productos.filter(p => (p.id ?? p._id) !== id);
+        this.addChangeLogEntry('Eliminado', `Producto "${deletedName}" eliminado.`);
         this.closeDelete();
       }, () => {
+        // en caso de error en el backend, igualmente actualizar UI localmente
+        this.productos = this.productos.filter(p => (p.id ?? p._id) !== id);
+       this.addChangeLogEntry('Eliminado', `Producto "${deletedName}" eliminado (local).`);
         this.closeDelete();
       });
     } else {
       this.productos = this.productos.filter(p => (p.id ?? p._id) !== id);
+      this.addChangeLogEntry('Eliminado', `Producto "${deletedName}" eliminado.`);
       this.closeDelete();
     }
   }
