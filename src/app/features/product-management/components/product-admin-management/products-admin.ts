@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductFormComponent } from '../product-form/product-form.component';
 import { ProductService } from '../../services/product.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-products-admin',
@@ -13,6 +14,8 @@ import { ProductService } from '../../services/product.service';
 })
 export class ProductsAdminComponent implements OnInit {
   productos: any[] = [];
+  private _subs: Subscription[] = [];
+
   viewMode: 'grid' | 'list' = 'grid';
   sortOption = 'price-asc';
 
@@ -27,10 +30,25 @@ export class ProductsAdminComponent implements OnInit {
   constructor(private productService: ProductService) {}
 
   ngOnInit(): void {
-    this.loadProducts();
+    // subscribir al flujo central de productos
+    this._subs.push(
+      this.productService.getAll().subscribe(list => {
+        this.productos = list ?? [];
+        // mantener orden si hay opción seleccionada
+        this.sortProducts();
+      })
+    );
+
+    // seed inicial si vacío
+    if ((this.productos?.length ?? 0) === 0) {
+      this.productService.loadInitial(this.sampleProducts());
+    }
   }
 
-  
+  ngOnDestroy(): void {
+    this._subs.forEach(s => s.unsubscribe());
+  }
+
   openChangeLog() {
     this.showChangeLogModal = true;
     this.loadChangeLog();
@@ -144,11 +162,66 @@ export class ProductsAdminComponent implements OnInit {
   onProductSaved(updated: any) {
     const idCandidate = updated.id ?? updated._id ?? this.selectedProduct?.id ?? this.selectedProduct?._id;
 
+    // Si existe id -> actualizar; si no -> crear a través del servicio.
+    if (idCandidate && typeof (this.productService as any).update === 'function') {
+      // conservar copia original para diff
+      const originalIdx = this.productos.findIndex(p => (p.id ?? p._id) === idCandidate);
+      const original = originalIdx > -1 ? { ...this.productos[originalIdx] } : null;
+
+      (this.productService as any).update(idCandidate, updated).subscribe((res: any) => {
+        const merged = original ? { ...original, ...res } : res;
+        const details = this.computeDiff(original, merged);
+        const name = merged.nombre ?? merged.name ?? 'Producto';
+        if (details.length) {
+          this.addChangeLogEntry('Actualizado', `Producto "${name}" actualizado.`, 'admin', details);
+        } else {
+          this.addChangeLogEntry('Actualizado', `Producto "${name}" actualizado (sin cambios detectados).`, 'admin');
+        }
+        this.closeEdit();
+      }, () => {
+        // fallback local: aplicar cambios y propagar al service
+        if (originalIdx > -1) {
+          this.productos[originalIdx] = { ...original, ...updated };
+        } else {
+          if (!(updated.id ?? updated._id)) updated.id = String(Date.now());
+          this.productos.unshift(updated);
+        }
+        // propagar al subject del service para sincronizar otras vistas
+        if (typeof (this.productService as any).loadInitial === 'function') {
+          (this.productService as any).loadInitial(this.productos);
+        }
+        const merged = original ? { ...original, ...updated } : updated;
+        const details = this.computeDiff(original, merged);
+        this.addChangeLogEntry('Actualizado', `Producto "${merged.nombre ?? merged.name}" actualizado (local).`, 'admin', details);
+        this.closeEdit();
+      });
+      return;
+    }
+
+    // Crear
+    if (typeof (this.productService as any).create === 'function') {
+      (this.productService as any).create(updated).subscribe((res: any) => {
+        const created = res ?? updated;
+        this.addChangeLogEntry('Creado', `Producto "${created.nombre ?? created.name}" creado.`, 'admin');
+        this.closeEdit();
+      }, () => {
+        // fallback local
+        if (!(updated.id ?? updated._id)) updated.id = String(Date.now());
+        this.productos.unshift(updated);
+        if (typeof (this.productService as any).loadInitial === 'function') {
+          (this.productService as any).loadInitial(this.productos);
+        }
+        this.addChangeLogEntry('Creado', `Producto "${updated.nombre ?? updated.name}" creado (local).`, 'admin');
+        this.closeEdit();
+      });
+      return;
+    }
+
+    // Sin service: aplicar localmente
     let idx = -1;
     if (idCandidate) {
       idx = this.productos.findIndex(p => (p.id ?? p._id) === idCandidate);
     }
-
     if (idx === -1) {
       idx = this.productos.findIndex(p =>
         (p.nombre ?? p.name ?? '').toString() === (updated.nombre ?? updated.name ?? '').toString()
@@ -156,47 +229,24 @@ export class ProductsAdminComponent implements OnInit {
       );
     }
 
-    const applyUpdated = (result: any) => {
-    const name = result.nombre ?? result.name ?? 'Producto';
+    const name = updated.nombre ?? updated.name ?? 'Producto';
     if (idx > -1) {
-      // obtener original para comparar (usar la versión actual en la lista)
-      const original = this.productos[idx];
-      const merged = { ...original, ...result };
-      const details = this.computeDiff(original, merged);
+      const original = { ...this.productos[idx] };
+      const merged = { ...original, ...updated };
       this.productos[idx] = merged;
-      if (details.length) {
-        this.addChangeLogEntry('Actualizado', `Producto "${name}" actualizado.`, 'admin', details);
-      } else {
-        this.addChangeLogEntry('Actualizado', `Producto "${name}" actualizado (sin cambios detectados).`, 'admin');
-      }
+      const details = this.computeDiff(original, merged);
+      this.addChangeLogEntry('Actualizado', `Producto "${name}" actualizado (local).`, 'admin', details);
     } else {
-      if (!(result.id ?? result._id)) result.id = String(Date.now());
-      this.productos.unshift(result);
-      this.addChangeLogEntry('Creado', `Producto "${name}" creado.`, 'admin');
+      if (!(updated.id ?? updated._id)) updated.id = String(Date.now());
+      this.productos.unshift(updated);
+      this.addChangeLogEntry('Creado', `Producto "${name}" creado (local).`, 'admin');
+    }
+    // propagar al service si posible
+    if (typeof (this.productService as any).loadInitial === 'function') {
+      (this.productService as any).loadInitial(this.productos);
     }
     this.sortProducts();
     this.closeEdit();
-  };
-
-    if (this.productService) {
-      if (idCandidate && typeof (this.productService as any).update === 'function') {
-        (this.productService as any).update(idCandidate, updated).subscribe((res: any) => {
-          applyUpdated(res ?? updated);
-        }, () => {
-          applyUpdated(updated);
-        });
-        return;
-      } else if (!idCandidate && typeof (this.productService as any).create === 'function') {
-        (this.productService as any).create(updated).subscribe((res: any) => {
-          applyUpdated(res ?? updated);
-        }, () => {
-          applyUpdated(updated);
-        });
-        return;
-      }
-    }
-
-    applyUpdated(updated);
   }
 
   openDelete(product: any) {
@@ -213,21 +263,28 @@ export class ProductsAdminComponent implements OnInit {
     if (!this.selectedProduct) return;
     const id = this.selectedProduct.id ?? this.selectedProduct._id;
     const deletedName = this.selectedProduct.nombre ?? this.selectedProduct.name ?? 'Producto';
-    if (this.productService && typeof (this.productService as any).delete === 'function' && id) {
+    if (id && typeof (this.productService as any).delete === 'function') {
       (this.productService as any).delete(id).subscribe(() => {
-        this.productos = this.productos.filter(p => (p.id ?? p._id) !== id);
-        this.addChangeLogEntry('Eliminado', `Producto "${deletedName}" eliminado.`);
+        this.addChangeLogEntry('Eliminado', `Producto "${deletedName}" eliminado.`, 'admin');
         this.closeDelete();
       }, () => {
-        // en caso de error en el backend, igualmente actualizar UI localmente
+        // fallback local
         this.productos = this.productos.filter(p => (p.id ?? p._id) !== id);
-       this.addChangeLogEntry('Eliminado', `Producto "${deletedName}" eliminado (local).`);
+        if (typeof (this.productService as any).loadInitial === 'function') {
+          (this.productService as any).loadInitial(this.productos);
+        }
+        this.addChangeLogEntry('Eliminado', `Producto "${deletedName}" eliminado (local).`, 'admin');
         this.closeDelete();
       });
-    } else {
-      this.productos = this.productos.filter(p => (p.id ?? p._id) !== id);
-      this.addChangeLogEntry('Eliminado', `Producto "${deletedName}" eliminado.`);
-      this.closeDelete();
+      return;
     }
+
+    // sin id o sin servicio: eliminar local
+    this.productos = this.productos.filter(p => (p.id ?? p._id) !== id);
+    if (typeof (this.productService as any).loadInitial === 'function') {
+      (this.productService as any).loadInitial(this.productos);
+    }
+    this.addChangeLogEntry('Eliminado', `Producto "${deletedName}" eliminado.`, 'admin');
+    this.closeDelete();
   }
 }
