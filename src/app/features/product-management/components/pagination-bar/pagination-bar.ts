@@ -1,11 +1,12 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
-
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-pagination-bar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    CommonModule
+  ],
   templateUrl: './pagination-bar.html',
   styleUrls: ['./pagination-bar.css']
 })

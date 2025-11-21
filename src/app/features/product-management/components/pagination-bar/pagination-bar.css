@@ -1,15 +1,13 @@
 /* 1. Contenedor Principal */
 .pagination-container {
-    /* flex justify-between items-center w-full py-6 */
     display: flex;
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    padding: 1.5rem 0; /* py-6 */
+    padding: 1.5rem 0;
 }
 
 .pagination-info {
-    /* text-sm text-muted-foreground */
     font-size: 0.875rem;
     color: var(--muted-foreground);
 }
@@ -22,13 +20,12 @@
 
 /* 2. Estilo Base del Botón */
 .pagination-button {
-    /* inline-flex items-center justify-center h-10 w-10 rounded-md transition-colors */
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: 2.5rem; /* h-10 */
-    width: 2.5rem; /* w-10 */
-    border-radius: 0.375rem; /* rounded-md */
+    height: 2.5rem;
+    width: 2.5rem;
+    border-radius: 0.375rem;
     border: 1px solid var(--border);
     background-color: var(--card);
     color: var(--secondary);
@@ -38,7 +35,6 @@
 }
 
 .pagination-button:hover:not(:disabled):not(.active) {
-    /* hover:bg-muted */
     background-color: var(--muted);
     border-color: var(--muted);
 }
@@ -54,7 +50,6 @@
 
 /* 4. Estilos del Número de Página Activa */
 .page-number-button.active {
-    /* bg-primary text-primary-foreground border-primary */
     background-color: var(--primary);
     color: var(--primary-foreground);
     border-color: var(--primary);
@@ -73,7 +68,6 @@
 /* 6. Responsividad (Móvil) */
 @media (max-width: 640px) {
     .pagination-container {
-        /* Pone la info en una línea y los botones en la otra */
         flex-direction: column;
         gap: 1rem;
         padding: 1rem 0;

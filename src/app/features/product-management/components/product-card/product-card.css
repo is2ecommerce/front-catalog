@@ -1,7 +1,6 @@
-/* 1. Contenedor Principal de la Tarjeta */
 
 .product-card {
-  background-color: var(--surface);
+   background-color: var(--surface);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 0.75rem;
@@ -18,7 +17,6 @@
   box-shadow: var(--shadow-md);
 }
 
-/* 2. Sección de Imagen */
 .image-container {
   position: relative;
   width: 100%;
@@ -38,7 +36,6 @@
   transform: scale(1.05);
 }
 
-/* Etiquetas de estado (Agotado/Descuento) */
 .status-badge {
   position: absolute;
   top: 0.75rem;
@@ -46,7 +43,7 @@
   padding: 0.25rem 0.6rem;
   border-radius: var(--radius);
   font-size: 0.75rem;
-  font-weight: var(--font-weight-medium);
+  font-weight: 600; /* Aumentado para mayor legibilidad */
   color: var(--primary-foreground);
   z-index: 10;
 }
@@ -59,7 +56,6 @@
   background-color: var(--muted-foreground); /* Color gris/apagado para agotado */
 }
 
-/* 3. Información del Producto */
 .product-info {
   padding: 1rem;
   flex-grow: 1; /* Permite que la info crezca y empuje el botón hacia abajo */
@@ -78,7 +74,6 @@
   overflow: hidden;
   min-height: 2.5rem;
 }
-
 /* 4. Sección de Precios */
 .price-section {
   display: flex;
@@ -103,12 +98,11 @@
   text-decoration: line-through;
   font-size: 0.875rem;
 }
-
 /* 5. Rating */
 .rating {
   display: flex;
   align-items: center;
-  gap: 0.2rem;
+  gap: 0.5rem;
   margin-bottom: 1rem;
 }
 
@@ -118,13 +112,6 @@
   color: var(--muted-foreground);
 }
 
-.star-icon {
-  color: #FFC107; /* Color fijo dorado para estrellas */
-  width: 1rem;
-  height: 1rem;
-}
-
-/* 6. Botón de Agregar al Carrito */
 
 .add-to-cart-button {
   background-color: var(--brand);
@@ -137,14 +124,24 @@
   font-size: 1rem;
   border-radius: 0.5rem;
   margin-top: 0.5rem;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 12px rgba(0, 126, 185, 0.25); /* Sombra azulada sutil por defecto */
   cursor: pointer;
-  transition: background 0.2s, box-shadow 0.2s;
+  transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 }
 
 .add-to-cart-button:hover:not(:disabled) {
-  background-color: #009ecb;
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 6px 16px rgba(0, 126, 185, 0.4);
+  transform: translateY(-2px);
+}
+
+/* En modo claro, mantenemos el degradado azul */
+.light .add-to-cart-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #006399, #00AEEF);
+}
+
+/* En modo oscuro, oscurecemos el naranja */
+.dark .add-to-cart-button:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--brand) 90%, black);
 }
 
 .add-to-cart-button:disabled {

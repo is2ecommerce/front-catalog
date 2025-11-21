@@ -14,7 +14,7 @@ import { UserHeaderComponent } from './features/shared/components/user-header/us
     UserHeaderComponent // <-- Añadido
   ],
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
   title = 'TechStore';

@@ -1,6 +1,5 @@
-import { Component, Input } from '@angular/core';
-import { Product } from '../../models/product.model'; // Asegúrate de que la ruta sea correcta
-
+import { Component, Input, OnInit } from '@angular/core';
+import { Product } from '../../models/product.model';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -10,24 +9,8 @@ import { CommonModule } from '@angular/common';
   templateUrl: './product-card.html',
   styleUrls: ['./product-card.css']
 })
-
-export class ProductCardComponent {
+export class ProductCardComponent implements OnInit {
   @Input() product!: Product;
 
-  get discountLabel(): string {
-    if (this.product && this.product.discountPercentage > 0) {
-      return `-${this.product.discountPercentage}%`;
-    }
-    return '';
-  }
-
-  get imageUrl(): string {
-    if (this.product?.imagePath) {
-      return this.product.imagePath;
-    }
-    if (this.product?.imageUrl) {
-      return this.product.imageUrl.startsWith('assets/') ? this.product.imageUrl : `assets/${this.product.imageUrl}`;
-    }
-    return '';
-  }
+  ngOnInit(): void {}
 }
