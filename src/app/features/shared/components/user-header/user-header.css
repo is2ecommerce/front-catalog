@@ -1,0 +1,187 @@
+
+
+.user-header {
+    background-color: #232f3e; 
+    border-bottom: none; 
+    padding: 0.75rem 0; 
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); 
+}
+
+ .header-inner {    display: flex;    align-items: center;
+    /* (Logo | Búsqueda | Acciones) */
+    gap: 3rem; 
+    justify-content: space-between;
+    padding: 0 1rem; /* Padding lateral */
+    max-width: 1400px; /* Aseguramos que se centre correctamente en pantallas grandes */
+    margin: 0 auto;
+}
+
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem; /* Espaciado exacto de TechStore */
+    text-decoration: none;
+    color: var(--white, #fff); 
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.logo img {
+    height: 2.5rem; /* Mantienes tu altura de 40px */
+    width: auto;
+}
+
+.logo span {
+    color: var(--white, #fff);
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: -0.5px;
+}
+
+
+
+.center-area {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.search-form {
+    display: flex;
+    align-items: center;
+    max-width: 600px;
+    width: 100%;
+    position: relative;
+}
+
+.search-input {
+    flex-grow: 1;
+    padding: 0.6rem 1rem; 
+    padding-right: 3.5rem; /* Espacio para el botón */
+    
+    /* Estilo del borde y fondo */
+    border: 1px solid var(--gray-dark, #ccc); /* Borde visible */
+    border-right: none; /* Quitamos el borde derecho para que parezca un solo elemento */
+    border-radius: 6px 0 0 6px; /* Borde redondeado solo a la izquierda */
+    background-color: var(--white, #fff); 
+    color: var(--foreground, #333);
+    outline: none;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-input:focus {
+    
+    border-color: var(--color-accent, orange); 
+    box-shadow: 0 0 0 3px rgba(228, 121, 17, 0.1);
+}
+
+.search-input::placeholder {
+    color: var(--gray-dark, #666);
+}
+
+.search-button {
+    /* Pegado al input */
+    background-color: var(--primary, #f3a65b); /* Color primario destacado */
+    color: var(--primary-dark, #232f3e); /* Color oscuro en el botón */
+    border: 1px solid var(--gray-dark, #ccc); /* Borde para separarlo del input */
+    border-left: none; /* Quitamos el borde izquierdo */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 0.8rem; /* Igual altura que el input */
+    border-radius: 0 6px 6px 0; /* Borde redondeado solo a la derecha */
+    transition: background-color 0.2s;
+    flex-shrink: 0;
+}
+
+.search-button:hover {
+    background-color: color-mix(in srgb, var(--primary, #f3a65b) 90%, black);
+}
+
+
+
+.right-area {
+    display: flex;
+    align-items: center;
+    /* AJUSTE CLAVE: Gap exacto de 1rem entre los íconos (Perfil y Carrito) */
+    gap: 1rem; 
+    flex-shrink: 0;
+}
+
+.action-button {
+    background: none;
+    border: none;
+    color: var(--white, #fff);
+    cursor: pointer;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.action-button svg {
+    width: 1.5rem; 
+    height: 1.5rem;
+}
+
+.action-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: scale(1.05);
+}
+
+/* Responsive (Aseguramos que se mantenga el mismo comportamiento responsivo) */
+@media (max-width: 968px) {
+    .header-inner {
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .user-header {
+        padding: 0.75rem 0;
+    }
+    .header-inner {
+        padding: 0 1rem;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+    .logo {
+        order: 1;
+    }
+    .right-area {
+        order: 2;
+        gap: 0.75rem;
+    }
+    .center-area {
+        order: 3;
+        flex-basis: 100%;
+        margin: 0;
+    }
+    .search-input {
+        padding: 0.65rem 0.875rem;
+    }
+    .search-button {
+        padding: 0.65rem 0.8rem; 
+    }
+}
+
+@media (max-width: 480px) {
+    .user-header {
+        padding: 0.5rem 0;
+    }
+    .logo span {
+        display: none;
+    }
+    .search-input::placeholder {
+        font-size: 0.85rem;
+    }
+}

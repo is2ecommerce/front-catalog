@@ -1,0 +1,25 @@
+<div class="product-card">
+  <div class="image-container">
+    <img [src]="product.image" [alt]="product.name" class="product-image">
+    <span *ngIf="product.discount" class="status-badge discount-badge">-{{ product.discount }}%</span>
+    <span *ngIf="product.stock === 0" class="status-badge sold-out">Agotado</span>
+  </div>
+
+  <div class="product-info">
+    <h3 class="product-name">{{ product.name }}</h3>
+
+    <div class="price-section">
+      <ng-container *ngIf="product.discount; else regularPrice">
+        <span class="discount-price">{{ product.price * (1 - product.discount / 100) | currency:'USD' }}</span>
+        <span class="original-price-strikethrough">{{ product.price | currency:'USD' }}</span>
+      </ng-container>
+      <ng-template #regularPrice>
+        <span class="regular-price">{{ product.price | currency:'USD' }}</span>
+      </ng-template>
+    </div>
+
+    <div class="rating" *ngIf="product.rating">
+      <span class="rating-value">{{ product.rating.rate }}</span>
+    </div>
+  </div>
+</div>

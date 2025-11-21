@@ -1,0 +1,150 @@
+<div class="banner">
+  <div class="banner-slides-container">
+    <!-- Itera sobre los nuevos slides -->
+    <div 
+      *ngFor="let slide of bannerSlides; let i = index" 
+      class="banner-slide" 
+      [class.active]="i === currentSlideIndex"
+      [style.background]="slide.backgroundGradient"
+    >
+      <!-- Capa de Imagen -->
+      <div 
+        class="banner-image-layer" 
+        [style.background-image]="'url(' + slide.imageUrl + ')'"
+        aria-hidden="true"
+      ></div>
+
+      <!-- Capa de Overlay -->
+      <div class="banner-overlay-layer" aria-hidden="true"></div>
+
+      <!-- Contenido del Banner -->
+      <div class="banner-content">
+        <div class="content-wrapper">
+          <!-- Badge de Categoría -->
+          <span 
+            class="category-badge"
+            [style.color]="slide.accentColor"
+            [style.border-color]="slide.accentColor"
+            [style.background-color]="slide.accentColor + '20'"
+          >
+            {{ slide.categoryText }}
+          </span>
+
+          <!-- Título -->
+          <h1 class="title">{{ slide.title }}</h1>
+          
+          <!-- Subtítulo -->
+          <p class="subtitle">{{ slide.subtitle }}</p>
+
+          <!-- Botón CTA -->
+          <button 
+            class="cta-button" 
+            [style.background-color]="slide.accentColor"
+            (click)="applyCategoryFilter(slide.categoryFilter)"
+          >
+            {{ slide.ctaText }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Controles de Navegación -->
+  <button class="banner-nav prev" (click)="prevSlide()" aria-label="Anterior Banner">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+  </button>
+  
+    <button class="banner-nav next" (click)="nextSlide()" aria-label="Siguiente Banner">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+  </button>
+
+  <div class="banner-dots-container">
+    <button 
+      *ngFor="let slide of bannerSlides; let i = index" 
+      class="dot" 
+      [class.active]="i === currentSlideIndex"
+      [style.background-color]="i === currentSlideIndex ? getCurrentAccentColor() : 'rgba(255,255,255,0.4)'"
+      (click)="goToSlide(i)"
+      [attr.aria-label]="'Ir al banner ' + (i + 1)"
+    ></button>
+  </div>
+</div>
+
+<!-- Área principal con filtros y productos -->
+<div class="main-content-area" [class.filters-collapsed]="!isFiltersVisible">
+  <!-- Columna de Filtros -->
+  <aside class="filter-sidebar">
+    <app-product-filters 
+      #filterComponent
+      [availableCategories]="availableCategories"
+      (filtersChange)="onFiltersChange($event)">
+    </app-product-filters>
+  </aside>
+
+  <!-- Área de la Rejilla de Productos -->
+  <div class="product-grid-area">
+    <!-- Barra de controles superior (ordenamiento, vista) -->
+    <div class="top-controls" *ngIf="paginatedResponse$ | async as response">
+      <div class="controls-left">
+        <button class="toggle-filters-btn" (click)="toggleFilters()" aria-label="Mostrar/Ocultar Filtros">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 3H2l8 9.46V19l4 2v-9.54L22 3z"/></svg>
+        </button>
+        <span class="product-count">{{ response.totalElements }} productos</span>
+      </div>
+      <div class="controls-right">
+        <div class="view-toggle">
+          <button (click)="setViewMode('grid')" [class.active]="viewMode === 'grid'">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+          </button>
+          <button (click)="setViewMode('list')" [class.active]="viewMode === 'list'">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+          </button>
+        </div>
+        <div class="custom-sort-container">
+          <button class="custom-sort-trigger" (click)="toggleSortDropdown()">
+            <div class="trigger-content">
+              <svg class="filter-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+              <span>Ordenar por: <strong>{{ selectedSortOption.label }}</strong></span>
+            </div>
+            <svg class="chevron-icon" [class.rotated]="isSortDropdownOpen" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+
+          <div class="custom-sort-panel" *ngIf="isSortDropdownOpen">
+            <button 
+              *ngFor="let option of sortOptions" 
+              class="custom-sort-option"
+              [class.selected]="option.value === selectedSortOption.value"
+              (click)="selectSortOption(option)">
+              <span>{{ option.label }}</span>
+              <svg *ngIf="option.value === selectedSortOption.value" class="check-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rejilla de productos -->
+    <div [ngClass]="{'product-grid': viewMode === 'grid', 'product-list-view': viewMode === 'list'}">
+      <ng-container *ngIf="products$ | async as products">
+        <div *ngIf="products.length === 0" class="no-results">
+            No se encontraron productos que coincidan con los filtros o búsqueda.
+        </div>
+        <app-product-card 
+          *ngFor="let product of products" 
+          [product]="product"
+        ></app-product-card>
+      </ng-container>
+    </div>
+    
+    <!-- Paginación en el pie de página -->
+    <div class="pagination-footer" *ngIf="paginatedResponse$ | async as response">
+        <app-pagination-bar
+            [currentPage]="response.number"
+            [totalPages]="response.totalPages"
+            [totalItems]="response.totalElements"
+            [pageSize]="response.size"
+            (pageChange)="onPageChange($event)">
+      </app-pagination-bar>
+    </div>
+  </div>
+</div>
