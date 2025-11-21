@@ -1,9 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
-/* ------------------------------------------------------------------- */
-/* REINICIO DE ESTILOS Y NORMALIZACIÓN */
-/* ------------------------------------------------------------------- */
 
-/* 1. Reinicio Básico (Aplica a todo, incluyendo elementos de componentes) */
+
+
 *,
 *::before,
 *::after {
@@ -12,13 +10,11 @@
   padding: 0;
 }
 
-/* 2. Propiedades de Fuente y Scroll */
 html {
-  /* Scroll suave para la navegación (ej. si usas anclas) */
   scroll-behavior: smooth; 
-  /* Asegura que el tamaño de fuente se base en un valor legible */
   font-size: 16px; 
 }
+
 
 /* 3. Estilos de Tipografía Base */
 body {
@@ -28,7 +24,6 @@ body {
   -webkit-font-smoothing: antialiased; /* Mejor renderizado en Chrome/Safari */
 }
 
-/* 4. Imágenes y Media */
 img,
 picture,
 video,
@@ -38,7 +33,6 @@ svg {
   max-width: 100%;
 }
 
-/* 5. Eliminación de Estilos por Defecto de Elementos de Formulario */
 input,
 button,
 textarea,
@@ -49,7 +43,6 @@ select {
   cursor: pointer; /* Hace que los botones sean interactivos por defecto */
 }
 
-/* 6. Enlaces */
 a {
     color: inherit;
     text-decoration: none;
@@ -58,13 +51,11 @@ a:hover {
     text-decoration: underline;
 }
 
-/* 7. Eliminar la decoración de listas */
 ul, ol {
     list-style: none;
 }
 
-/* ------------------------------------------------------------------- */
-/* DIRECTIVAS DE ANGULAR (Opcional, pero útil) */
+
 /* ------------------------------------------------------------------- */
 
 /* Estilo para el RouterLink activo */
@@ -73,41 +64,73 @@ ul, ol {
     font-weight: 700;
 }
 
-/* ------------------------------------------------------------------- */
-/* THEME PALETTE & BRAND VARIABLES (Global)                         */
-/* ------------------------------------------------------------------- */
+
 :root {
   /* Brand color */
-  --brand: #00AEEF; /* Turquesa brillante solicitado */
-  --brand-foreground: #ffffff;
+  --brand: #007eb9; /* Turquesa brillante solicitado */
+  --brand-foreground: #ffff; /* Color naranja del botón de búsqueda */
 
   /* Backgrounds */
-  --app-background: #F8F8F8; /* Cuerpo principal */
-  --surface: #ffffff; /* Superfícies como tarjetas y sidebars */
+  --background: #ffffff; /* Fondo principal (Blanco) */
+  --surface: #f8fafc;    /* Fondo alternativo para tarjetas, etc. (Gris muy claro) */
 
   /* Text colors */
-  --text: #111827; /* Gris oscuro / Negro suave */
+  --text: #1a1a1a;       /* Texto (NEGRO o muy oscuro) */
   --muted-text: #6B7280;
 
   /* Borders / shadows */
-  --border: #E5E7EB;
+  --border: #224690;
   --shadow-sm: 0 1px 2px rgba(16,24,40,0.04);
   --shadow-md: 0 6px 20px rgba(16,24,40,0.08);
 }
 
-/* Apply app background globally */
+
+.dark {
+  /* Brand color (se mantiene) */
+  --brand: #f3a65b; /* Color naranja del botón de búsqueda */
+  --brand-foreground: #ffffff; /* Texto blanco para contraste */
+
+  /* Backgrounds (invertidos) */
+  --background: #0f172a; /* Azul oscuro casi negro */
+  --surface: #1e293b;    /* Azul grisáceo oscuro para tarjetas */
+
+  /* Text colors (invertidos) */
+  --text: #f3f4f6;
+  --muted-text: #9CA3AF;     /* Texto secundario más claro */
+
+  /* Borders / shadows (adaptados) */
+  --border: #374151;         /* Borde gris oscuro */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.1);
+  --shadow-md: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+html::before,body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, 
+    rgba(228, 121, 17, 0.20) 0%, 
+    rgba(200, 101, 0, 0.23) 30%,
+    rgba(35, 47, 62, 0.28) 70%,
+    rgba(23, 31, 42, 0.33) 100%
+  );
+  backdrop-filter: blur(0.5px);
+  z-index: -1;
+  pointer-events: none;
+}
 
 body {
-  background-color: var(--app-background);
+  background-color: var(--background);
   color: var(--text);
   font-family: 'Inter', 'Roboto', Arial, sans-serif;
   font-size: 1rem;
 }
 
-/* Buttons primary */
-
 .btn-primary {
-  background-color: var(--brand);
+  background-color: var(--brand);  
   color: var(--brand-foreground);
   border: none;
   padding: 0.75rem 1.25rem;
@@ -121,13 +144,63 @@ body {
 }
 
 .btn-primary:hover {
-  background-color: #009ecb;
+  background-color: #009ecb;  
   box-shadow: var(--shadow-md);
 }
 
-/* Utility container to center content */
 .container {
   max-width: 1300px;
   margin: 0 auto;
   padding: 0 1.25rem;
+}
+
+/* ------------------------------------------------------------------- */
+ .dark-mode-toggle {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem; /* Cambiado de 'left' a 'right' para mover a la derecha */
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: var(--card); /* Usará el color de fondo de las tarjetas */
+  color: #ffffff; /* Iconos siempre blancos */
+  border: 2px solid var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1000; /* Asegura que esté por encima de otros elementos */
+  box-shadow: var(--shadow-md);
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.dark-mode-toggle:hover {
+  transform: scale(1.1);
+}
+
+/* Por defecto (modo claro), mostramos la luna y ocultamos el sol */
+.dark-mode-toggle .icon-moon {
+  display: block;
+}
+.dark-mode-toggle .icon-sun {
+  display: none;
+}
+
+/* Cuando el modo oscuro está activo (.dark en el body) */
+.dark .dark-mode-toggle .icon-sun { display: block; }
+.dark .dark-mode-toggle .icon-moon { display: none; }
+
+/* Por defecto, mostramos el logo claro y ocultamos el oscuro */
+.logo-dark {
+  display: none;
+}
+.logo-light {
+  display: block;
+}
+
+ .dark .logo-light {
+  display: none;
+}
+.dark .logo-dark {
+  display: block;
 }

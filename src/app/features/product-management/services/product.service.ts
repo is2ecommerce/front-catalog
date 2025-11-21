@@ -1,182 +1,213 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable, of, BehaviorSubject } from 'rxjs';
+import { tap, catchError, map } from 'rxjs/operators';
 import { PaginatedResponse, Product, ProductQueryParams, FilterState } from '../models/product.model';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
-  private baseUrl = '/api/products';
+  private baseUrl = `${environment.apiUrl}/products`;
 
-  constructor(private http: HttpClient) {}
+  // Subject centralizado para que admin y catálogo compartan estado en tiempo real
+  private readonly _products = new BehaviorSubject<Product[]>([]);
+  products$ = this._products.asObservable();
 
-  getProducts(params: ProductQueryParams & { filters?: FilterState }): Observable<PaginatedResponse<Product>> {
-    let httpParams = new HttpParams()
-      .set('page', params.page.toString())
-      .set('size', params.size.toString())
-      .set('sortBy', params.sortBy)
-      .set('sortDir', params.sortDir);
+  constructor(private http: HttpClient) {
+    // El constructor ahora está limpio y no carga datos de ejemplo.
+  }
 
-    if (params.searchQuery) {
-      httpParams = httpParams.set('query', params.searchQuery);
-    }
+private _withAliases(p: Product): Product {
+    return {
+      ...p,
+      nombre: (p as any).name ?? (p as any).nombre,
+      descripcion: (p as any).description ?? (p as any).descripcion,
+      precio: (p as any).price ?? (p as any).precio,
+      imagen: (p as any).imageUrl ?? (p as any).imagen
+    } as Product & any;
+  }
 
-    // --- CORRECCIÓN para TS2741: Agregando la propiedad 'category' ---
-    const sampleProducts: Product[] = [
-      {
-        id: 'p1',
-        name: 'Auriculares Inalámbricos X200',
-        price: 79.99,
-        discountPrice: 59.99,
-        discountPercentage: 25,
-        imageUrl: 'assets/audifonos.jpeg',
-        rating: 4.5,
-        description: 'Auriculares con cancelación de ruido y batería de larga duración.',
-        stock: 12,
-        category: ['Audio', 'Electrónicos'] // <--- AGREGADO
-      },
-      {
-        id: 'p2',
-        name: 'Teclado Mecánico KMX',
-        price: 129.99,
-        discountPrice: 119.99,
-        discountPercentage: 8,
-        imageUrl: 'assets/teclado.jpeg',
-        rating: 4.7,
-        description: 'Teclado mecánico RGB con switches ópticos.',
-        stock: 5,
-        category: ['Gaming', 'Computadoras'] // <--- AGREGADO
-      }
-    ,
-      {
-        id: 'p3',
-        name: 'Auriculares Gamer Pro G7',
-        price: 99.99,
-        discountPercentage: 0,
-        imageUrl: 'assets/audifonosgamer.jpeg',
-        rating: 4.8,
-        description: 'Sumérgete en el juego con sonido 7.1 surround y micrófono con cancelación de ruido.',
-        stock: 20,
-        category: ['Gaming', 'Audio', 'Electrónicos']
-      },
-      {
-        id: 'p4',
-        name: 'Mouse Óptico Ergonómico M5',
-        price: 49.99,
-        discountPrice: 39.99,
-        discountPercentage: 20,
-        imageUrl: 'assets/mouse.jpeg',
-        rating: 4.6,
-        description: 'Mouse de alta precisión con diseño ergonómico para largas sesiones de trabajo o juego.',
-        stock: 35,
-        category: ['Computadoras', 'Gaming']
-      },
-      {
-        id: 'p5',
-        name: 'Laptop Gamer X-Force',
-        price: 1499.99,
-        discountPrice: 1399.99,
-        discountPercentage: 7,
-        imageUrl: 'assets/laptop.jpeg',
-        rating: 4.9,
-        description: 'Laptop de última generación con tarjeta gráfica dedicada y pantalla de 144Hz.',
-        stock: 8,
-        category: ['Gaming', 'Computadoras', 'Electrónicos']
-      },
-      {
-        id: 'p6',
-        name: 'Control Inalámbrico Pro',
-        price: 69.99,
-        discountPercentage: 0,
-        imageUrl: 'assets/control.jpeg',
-        rating: 4.7,
-        description: 'Control compatible con PC y consolas, con vibración háptica y gatillos adaptativos.',
-        stock: 0, // 🚨 CLAVE: Producto agotado
-        category: ['Gaming', 'Accesorios']
-      }
-    ];
+   private _normalizeProduct(p: any): Product {
+    const id = p.id ?? p._id ?? String(Date.now());
+    const name = (p.name ?? p.nombre ?? '').toString();
+    const price = (p.price ?? p.precio ?? 0) as number;
+    const description = (p.description ?? p.descripcion ?? '').toString();
+    const stock = (p.stock ?? 0) as number;
+    const category = (p.category ?? p.categoria ?? []) as string[];
+    const rating = (p.rating ?? 0) as number;
 
-    let filteredProducts = [...sampleProducts];
+    // Normalizar la imagen: aceptar imageUrl, imagen, image, url; soportar File y base64/data urls
+    const rawImage = p.imageUrl ?? p.imagen ?? p.image ?? p.url ?? '';
+    let imageUrl = '';
 
-    // 🚨 CLAVE: Aplicar filtro de búsqueda por texto si existe.
+    if (rawImage instanceof File) {
+      imageUrl = URL.createObjectURL(rawImage);
+    } else if (typeof rawImage === 'string') {
+      imageUrl = rawImage.trim();
+    } else {
+      imageUrl = '';
+    }
+
+    const normalized: Product = {
+      ...p,
+      id,
+      name,
+      price,
+      description,
+      imageUrl,
+      stock,
+      category,
+      rating,
+    } as Product;
+
+    // añadir aliases para compatibilidad con templates en español
+    (normalized as any).nombre = name;
+    (normalized as any).descripcion = description;
+    (normalized as any).precio = price;
+    (normalized as any).imagen = imageUrl;
+
+    return normalized;
+  }
+
+
+  
+
+  // Devuelve observable con lista completa (no paginada)
+  getAll(): Observable<Product[]> {
+    return this.products$;
+  }
+
+  // Inicializar/sembrar datos en el BehaviorSubject (útil para entorno sin backend)
+  loadInitial(products: Product[]) {
+    const normalized = (products ?? []).map(p => this._withAliases(this._normalizeProduct(p)));
+    this._products.next(normalized);
+  }
+
+  // Método existente para paginado/simulación; ahora usa el state central si existe
+  getProducts(params: ProductQueryParams & { filters?: FilterState }): Observable<PaginatedResponse<Product>> {
+    let httpParams = new HttpParams()
+      .set('page', params.page.toString())
+      .set('size', params.size.toString())
+      .set('sortBy', params.sortBy)
+      .set('sortDir', params.sortDir);
+
     if (params.searchQuery) {
-      const query = params.searchQuery.toLowerCase().trim();
-      filteredProducts = filteredProducts.filter(product =>
-        product.name.toLowerCase().includes(query)
-      );
+      httpParams = httpParams.set('query', params.searchQuery);
     }
 
-    // Aplicar filtros si existen
+    // 🚨 CORRECCIÓN: Añadir los filtros a los HttpParams
     if (params.filters) {
-      const { categories, minPrice, maxPrice, inStock, onSale, minRating } = params.filters;
-      // Filtrar por categoría
-      if (categories && categories.length > 0) {
-        filteredProducts = filteredProducts.filter(product => 
-          product.category.some(cat => categories.includes(cat))
-        );
-      }
-
-      // Filtrar por precio mínimo
-      if (minPrice != null) {
-        filteredProducts = filteredProducts.filter(product => 
-          (product.discountPrice ?? product.price) >= minPrice
-        );
-      }
-
-      // Filtrar por precio máximo
-      if (maxPrice != null && maxPrice > 0) {
-        filteredProducts = filteredProducts.filter(product => 
-          (product.discountPrice ?? product.price) <= maxPrice
-        );
-      }
-
-      // Filtrar por disponibilidad
-      if (inStock) {
-        filteredProducts = filteredProducts.filter(product => product.stock > 0);
-      }
-
-      // Filtrar por promoción
-      if (onSale) {
-        filteredProducts = filteredProducts.filter(product => product.discountPercentage > 0);
-      }
-
-      // Filtrar por puntuación mínima
-      if (minRating != null) {
-        filteredProducts = filteredProducts.filter(product => product.rating >= minRating);
-      }
-    }
-
-    // 🚨 CLAVE: Aplicar ordenamiento
-    if (params.sortBy && params.sortBy !== 'featured') {
-      filteredProducts.sort((a, b) => {
-        const valA = params.sortBy === 'price' ? (a.discountPrice ?? a.price) : a.name;
-        const valB = params.sortBy === 'price' ? (b.discountPrice ?? b.price) : b.name;
-
-        if (valA < valB) {
-          return params.sortDir === 'asc' ? -1 : 1;
+      Object.entries(params.filters).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== '') {
+          httpParams = httpParams.set(key, String(value));
         }
-        if (valA > valB) {
-          return params.sortDir === 'asc' ? 1 : -1;
-        }
-        return 0;
       });
     }
 
-    // ... resto de la simulación del mock ...
-    const mock: PaginatedResponse<Product> = {
-      content: filteredProducts,
-      number: params.page,
-      size: params.size,
-      totalElements: filteredProducts.length,
-      totalPages: 1,
-      first: true,
-      last: true
-    };
+    // La lógica de filtrado, ordenamiento y paginación ahora se delega al backend.
+    // El frontend solo envía los parámetros.
+    return this.http.get<PaginatedResponse<Product>>(this.baseUrl, { params: httpParams }).pipe(
+      catchError(() => {
+        // En caso de error en la API, devolvemos una respuesta vacía para no romper la UI
+        const emptyResponse: PaginatedResponse<Product> = {
+          content: [],
+          totalPages: 0,
+          totalElements: 0,
+          size: params.size,
+          number: params.page,
+          first: true,
+          last: true,
+        };
+        return of(emptyResponse);
+      })
+    );
+  }
 
-    return of(mock);
-  }
+  // Crear producto (actualiza subject)
+   create(product: Product): Observable<Product> {
+    if (this.http) {
+      return this.http.post<Product>(this.baseUrl, product).pipe(
+        tap(created => {
+          const normalized = this._withAliases(this._normalizeProduct(created));
+          this._products.next([normalized, ...this._products.value]);
+        }),
+        catchError(() => {
+          const created = { ...product, id: product.id ?? String(Date.now()) };
+          const normalized = this._withAliases(this._normalizeProduct(created));
+          this._products.next([normalized, ...this._products.value]);
+          return of(normalized);
+        })
+      );
+    }
+    const created = { ...product, id: product.id ?? String(Date.now()) };
+    const normalized = this._withAliases(this._normalizeProduct(created));
+    this._products.next([normalized, ...this._products.value]);
+    return of(normalized);
+  }
 
-  updateStock(productId: string, newStock: number): Observable<Product> {
-    const url = `${this.baseUrl}/${productId}/stock`;
-    return this.http.put<Product>(url, { stock: newStock });
-  }
+  // Actualizar producto (actualiza subject)
+  update(id: string, patch: Partial<Product>): Observable<Product> {
+    const numericId = parseInt(id, 10);
+    if (this.http) {
+      return this.http.put<Product>(`${this.baseUrl}/${id}`, patch).pipe(
+        tap(updated => {
+          // merge con la lista actual y normalizar resultado
+          const list = this._products.value.map(p => {
+            if (p.id === updated.id) {
+              const merged = { ...p, ...updated };
+              return this._withAliases(this._normalizeProduct(merged));
+            }
+            return p;
+          });
+          this._products.next(list);
+        }),
+        catchError(() => {
+          const list = this._products.value.map(p => (p.id === numericId) ? this._withAliases(this._normalizeProduct({ ...p, ...patch })) : p);
+          const updated = list.find(p => p.id === numericId) as Product;
+          this._products.next(list);
+          return of(updated);
+        })
+      );
+    }
+    const list = this._products.value.map(p => (p.id === numericId) ? this._withAliases(this._normalizeProduct({ ...p, ...patch })) : p);
+    const updated = list.find(p => p.id === numericId) as Product;
+    this._products.next(list);
+    return of(updated);
+  }
+
+  // Eliminar producto (actualiza subject)
+  delete(id: string): Observable<Product | null> {
+    const numericId = parseInt(id, 10);
+    if (this.http) {
+      return this.http.delete<Product>(`${this.baseUrl}/${id}`).pipe(
+        tap(() => this._products.next(this._products.value.filter(p => p.id !== numericId))),
+        catchError(() => {
+          const removed = this._products.value.find(p => p.id === numericId) ?? null;
+          this._products.next(this._products.value.filter(p => p.id !== numericId));
+          return of(removed);
+        })
+      );
+    }
+    const removed = this._products.value.find(p => p.id === numericId) ?? null;
+    this._products.next(this._products.value.filter(p => p.id !== numericId));
+    return of(removed);
+  }
+
+  updateStock(productId: string, newStock: number): Observable<Product> {
+    const url = `${this.baseUrl}/${productId}/stock`;
+    return this.http.put<Product>(url, { stock: newStock }).pipe(
+      tap(updatedProduct => {
+        // Normaliza la respuesta del backend para asegurar consistencia
+        const normalizedProduct = this._normalizeProduct(updatedProduct);
+
+        // Actualiza la lista de productos en el BehaviorSubject
+        const currentProducts = this._products.getValue();
+        const index = currentProducts.findIndex(p => p.id === Number(productId));
+        if (index !== -1) {
+          currentProducts[index] = this._withAliases(normalizedProduct);
+          this._products.next([...currentProducts]);
+        }
+      })
+    );
+  }
 }
