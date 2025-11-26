@@ -7,207 +7,254 @@ import { environment } from '../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
-  private baseUrl = `${environment.apiUrl}/products`;
+  // Configurado para conectar con Spring Boot en http://localhost:8080/productos
+  private baseUrl = `${environment.apiUrl}/productos`;
 
   // Subject centralizado para que admin y catálogo compartan estado en tiempo real
   private readonly _products = new BehaviorSubject<Product[]>([]);
   products$ = this._products.asObservable();
 
   constructor(private http: HttpClient) {
-    // El constructor ahora está limpio y no carga datos de ejemplo.
+    // Cargar productos al iniciar el servicio
+    this.getAll().subscribe();
   }
 
-private _withAliases(p: Product): Product {
-    return {
-      ...p,
-      nombre: (p as any).name ?? (p as any).nombre,
-      descripcion: (p as any).description ?? (p as any).descripcion,
-      precio: (p as any).price ?? (p as any).precio,
-      imagen: (p as any).imageUrl ?? (p as any).imagen
-    } as Product & any;
-  }
-
-   private _normalizeProduct(p: any): Product {
-    const id = p.id ?? p._id ?? String(Date.now());
-    const name = (p.name ?? p.nombre ?? '').toString();
-    const price = (p.price ?? p.precio ?? 0) as number;
-    const description = (p.description ?? p.descripcion ?? '').toString();
-    const stock = (p.stock ?? 0) as number;
-    const category = (p.category ?? p.categoria ?? []) as string[];
-    const rating = (p.rating ?? 0) as number;
-
-    // Normalizar la imagen: aceptar imageUrl, imagen, image, url; soportar File y base64/data urls
-    const rawImage = p.imageUrl ?? p.imagen ?? p.image ?? p.url ?? '';
-    let imageUrl = '';
-
-    if (rawImage instanceof File) {
-      imageUrl = URL.createObjectURL(rawImage);
-    } else if (typeof rawImage === 'string') {
-      imageUrl = rawImage.trim();
-    } else {
-      imageUrl = '';
+  // Mapeo de Backend (multimedia list, calificacion number) -> Frontend (imagen string, rating object)
+  private _mapToFrontend(data: any): Product {
+    const img = (data.multimedia && data.multimedia.length > 0) ? data.multimedia[0] : (data.imagen || 'https://via.placeholder.com/300');
+    
+    // Aseguramos que categoria sea un array de strings para el frontend
+    let cats: string[] = [];
+    if (Array.isArray(data.categoria)) {
+      cats = data.categoria;
+    } else if (typeof data.categoria === 'string') {
+      cats = [data.categoria];
     }
 
-    const normalized: Product = {
-      ...p,
-      id,
-      name,
-      price,
-      description,
-      imageUrl,
-      stock,
-      category,
-      rating,
-    } as Product;
-
-    // añadir aliases para compatibilidad con templates en español
-    (normalized as any).nombre = name;
-    (normalized as any).descripcion = description;
-    (normalized as any).precio = price;
-    (normalized as any).imagen = imageUrl;
-
-    return normalized;
+    return {
+      ...data,
+      id: data.id,
+      // Alias para compatibilidad
+      name: data.nombre,
+      nombre: data.nombre,
+      description: data.descripcion,
+      descripcion: data.descripcion,
+      price: Number(data.precio),
+      precio: Number(data.precio),
+      stock: Number(data.stock),
+      category: cats,
+      categoria: cats,
+      imageUrl: img,
+      imagen: img,
+      // Frontend espera objeto rating { rate, count }
+      rating: { rate: data.calificacion || 0, count: 0 }
+    } as unknown as Product;
   }
 
+  // Mapeo de Frontend -> Backend
+  private _mapToBackend(product: any): any {
+    // Extraer la primera categoría si es un array, o usar string directo
+    let cat = 'General';
+    if (Array.isArray(product.categoria) && product.categoria.length > 0) {
+      cat = product.categoria[0];
+    } else if (typeof product.categoria === 'string') {
+      cat = product.categoria;
+    } else if (Array.isArray(product.category) && product.category.length > 0) {
+      cat = product.category[0];
+    }
 
-  
+    const img = product.imagen || product.imageUrl || product.image || '';
+
+    return {
+      id: product.id,
+      nombre: product.nombre || product.name,
+      descripcion: product.descripcion || product.description,
+      precio: product.precio || product.price,
+      stock: product.stock,
+      categoria: cat,
+      // Convertimos la imagen simple a lista multimedia
+      multimedia: img ? [img] : [],
+      // Campos requeridos por el backend
+      marca: product.marca || 'Generica',
+      disponibilidad: product.disponibilidad ?? true,
+      garantia: product.garantia || '1 año',
+      calificacion: product.rating?.rate || 0
+    };
+  }
 
   // Devuelve observable con lista completa (no paginada)
   getAll(): Observable<Product[]> {
-    return this.products$;
+    // Fix: Usar endpoint REST estándar (GET /productos) en lugar de /get/product
+    return this.http.get<any>(this.baseUrl).pipe(
+      map(response => {
+        // Adaptador inteligente: Si el backend devuelve un Page (objeto), extraemos content. Si es Array, lo usamos directo.
+        const items = Array.isArray(response) ? response : (response.content || []);
+        return items.map((item: any) => this._mapToFrontend(item));
+      }),
+      tap(products => this._products.next(products)),
+      catchError(error => {
+        console.error('Error cargando productos (getAll). Verifique CORS en Backend o URL correcta.', error);
+        return of([]);
+      })
+    );
   }
 
   // Inicializar/sembrar datos en el BehaviorSubject (útil para entorno sin backend)
   loadInitial(products: Product[]) {
-    const normalized = (products ?? []).map(p => this._withAliases(this._normalizeProduct(p)));
-    this._products.next(normalized);
+    this._products.next(products);
   }
 
   // Método existente para paginado/simulación; ahora usa el state central si existe
   getProducts(params: ProductQueryParams & { filters?: FilterState }): Observable<PaginatedResponse<Product>> {
+    // Si hay búsqueda por texto, usamos el endpoint de búsqueda (que devuelve lista, no página)
+    if (params.searchQuery && params.searchQuery.trim().length > 0) {
+      const q = params.searchQuery.trim();
+      return this.http.get<any[]>(`${this.baseUrl}/search`, { params: { q } }).pipe(
+        map(items => {
+          const products = items.map(item => this._mapToFrontend(item));
+          // Simulamos estructura paginada
+          return {
+            content: products,
+            totalPages: 1,
+            totalElements: products.length,
+            size: products.length,
+            number: 0,
+            first: true,
+            last: true
+          };
+        }),
+        catchError(() => of({
+          content: [], totalPages: 0, totalElements: 0, size: 0, number: 0, first: true, last: true
+        }))
+      );
+    }
+
+    // Si no hay búsqueda, usamos paginación normal
     let httpParams = new HttpParams()
       .set('page', params.page.toString())
       .set('size', params.size.toString())
       .set('sortBy', params.sortBy)
       .set('sortDir', params.sortDir);
 
-    if (params.searchQuery) {
-      httpParams = httpParams.set('query', params.searchQuery);
-    }
-
-    // 🚨 CORRECCIÓN: Añadir los filtros a los HttpParams
-    if (params.filters) {
-      Object.entries(params.filters).forEach(([key, value]) => {
-        if (value !== null && value !== undefined && value !== '') {
-          httpParams = httpParams.set(key, String(value));
+    // Fix: Acceso seguro a filters y category usando 'any' temporalmente si la interfaz no coincide,
+    // o validando existencia.
+    if (params.filters && (params.filters as any).category) {
+        const rawCat = (params.filters as any).category;
+        // Fix: Convertir array a string o tomar el primer valor, ya que el backend espera un String
+        const cat = Array.isArray(rawCat) 
+          ? (rawCat.length > 0 ? rawCat[0] : '') 
+          : rawCat;
+        
+        if (cat) {
+          httpParams = httpParams.set('categoria', String(cat));
         }
-      });
     }
+    
+    // No usamos 'q' aquí porque ya se manejó arriba en el bloque if
 
-    // La lógica de filtrado, ordenamiento y paginación ahora se delega al backend.
-    // El frontend solo envía los parámetros.
-    return this.http.get<PaginatedResponse<Product>>(this.baseUrl, { params: httpParams }).pipe(
-      catchError(() => {
-        // En caso de error en la API, devolvemos una respuesta vacía para no romper la UI
-        const emptyResponse: PaginatedResponse<Product> = {
-          content: [],
-          totalPages: 0,
-          totalElements: 0,
-          size: params.size,
-          number: params.page,
-          first: true,
-          last: true,
+    // Fix: Usar endpoint base (GET /productos) con params.
+    // IMPORTANTE: Si ves errores CORS en consola, debes agregar @CrossOrigin(origins = "http://localhost:4200") en tu Controller de Spring Boot.
+    return this.http.get<any>(this.baseUrl, { params: httpParams }).pipe(
+      map(response => {
+        // Lógica robusta: El backend puede devolver una lista simple (Array) o una Page (Objeto con content)
+        let content = [];
+        let totalElements = 0;
+        let totalPages = 1;
+
+        if (Array.isArray(response)) {
+            // Caso: Backend devuelve lista completa sin paginar
+            content = response.map((p: any) => this._mapToFrontend(p));
+            totalElements = content.length;
+        } else if (response && response.content) {
+            // Caso: Backend devuelve objeto Page estándar de Spring
+            content = response.content.map((p: any) => this._mapToFrontend(p));
+            totalElements = response.totalElements;
+            totalPages = response.totalPages;
+        }
+
+        return {
+          content: content,
+          totalPages: totalPages,
+          totalElements: totalElements,
+          size: response.size || params.size,
+          number: response.number || params.page,
+          first: response.first ?? true,
+          last: response.last ?? true
         };
-        return of(emptyResponse);
+      }),
+      catchError((err) => {
+          console.error('Error en getProducts. Revise consola por errores CORS (bloqueo de seguridad) o 404 (URL incorrecta).', err);
+          return of({
+              content: [],
+              totalPages: 0,
+              totalElements: 0,
+              size: params.size,
+              number: params.page,
+              first: true,
+              last: true,
+          });
       })
     );
   }
 
   // Crear producto (actualiza subject)
-   create(product: Product): Observable<Product> {
-    if (this.http) {
-      return this.http.post<Product>(this.baseUrl, product).pipe(
-        tap(created => {
-          const normalized = this._withAliases(this._normalizeProduct(created));
-          this._products.next([normalized, ...this._products.value]);
-        }),
-        catchError(() => {
-          const created = { ...product, id: product.id ?? String(Date.now()) };
-          const normalized = this._withAliases(this._normalizeProduct(created));
-          this._products.next([normalized, ...this._products.value]);
-          return of(normalized);
-        })
-      );
-    }
-    const created = { ...product, id: product.id ?? String(Date.now()) };
-    const normalized = this._withAliases(this._normalizeProduct(created));
-    this._products.next([normalized, ...this._products.value]);
-    return of(normalized);
+   create(product: Product): Observable<any> {
+    const payload = this._mapToBackend(product);
+    // Fix: Usar POST /productos y esperar JSON estándar
+    return this.http.post<any>(this.baseUrl, payload).pipe(
+      map(response => {
+          // Si el backend devuelve el objeto creado, tomamos su ID
+          const id = response?.id || response;
+          return { ...this._mapToFrontend(payload), id };
+      }),
+      tap(() => this.getAll().subscribe()), // Recargar lista completa para actualizar UI
+      catchError(err => {
+        console.error('Error creando producto', err);
+        return of(null);
+      })
+    );
   }
 
   // Actualizar producto (actualiza subject)
-  update(id: string, patch: Partial<Product>): Observable<Product> {
-    const numericId = parseInt(id, 10);
-    if (this.http) {
-      return this.http.put<Product>(`${this.baseUrl}/${id}`, patch).pipe(
-        tap(updated => {
-          // merge con la lista actual y normalizar resultado
-          const list = this._products.value.map(p => {
-            if (p.id === updated.id) {
-              const merged = { ...p, ...updated };
-              return this._withAliases(this._normalizeProduct(merged));
-            }
-            return p;
-          });
-          this._products.next(list);
-        }),
-        catchError(() => {
-          const list = this._products.value.map(p => (p.id === numericId) ? this._withAliases(this._normalizeProduct({ ...p, ...patch })) : p);
-          const updated = list.find(p => p.id === numericId) as Product;
-          this._products.next(list);
-          return of(updated);
-        })
-      );
-    }
-    const list = this._products.value.map(p => (p.id === numericId) ? this._withAliases(this._normalizeProduct({ ...p, ...patch })) : p);
-    const updated = list.find(p => p.id === numericId) as Product;
-    this._products.next(list);
-    return of(updated);
+  update(id: string, patch: Partial<Product>): Observable<any> {
+    // Backend espera el objeto completo con ID en el body para /editarProducto
+    // Fix: Comparación de ID robusta (String vs String)
+    const current = this._products.value.find(p => String(p.id) === String(id)) || {};
+    const merged = { ...current, ...patch, id };
+    const payload = this._mapToBackend(merged);
+
+    // Fix: Usar PUT /productos/:id en lugar de /editarProducto
+    return this.http.put(`${this.baseUrl}/${id}`, payload).pipe(
+      map(res => this._mapToFrontend(res)),
+      tap(() => this.getAll().subscribe()),
+      catchError(err => {
+        console.error('Error actualizando producto', err);
+        return of(null);
+      })
+    );
   }
 
   // Eliminar producto (actualiza subject)
-  delete(id: string): Observable<Product | null> {
-    const numericId = parseInt(id, 10);
-    if (this.http) {
-      return this.http.delete<Product>(`${this.baseUrl}/${id}`).pipe(
-        tap(() => this._products.next(this._products.value.filter(p => p.id !== numericId))),
-        catchError(() => {
-          const removed = this._products.value.find(p => p.id === numericId) ?? null;
-          this._products.next(this._products.value.filter(p => p.id !== numericId));
-          return of(removed);
-        })
-      );
-    }
-    const removed = this._products.value.find(p => p.id === numericId) ?? null;
-    this._products.next(this._products.value.filter(p => p.id !== numericId));
-    return of(removed);
+  delete(id: string): Observable<any> {
+    // Fix: Asegurar que la URL es correcta (ya estaba bien, pero confirmamos)
+    return this.http.delete(`${this.baseUrl}/${id}`).pipe(
+      tap(() => this.getAll().subscribe()),
+      catchError(err => {
+        console.error('Error eliminando producto', err);
+        return of(null);
+      })
+    );
   }
 
-  updateStock(productId: string, newStock: number): Observable<Product> {
-    const url = `${this.baseUrl}/${productId}/stock`;
-    return this.http.put<Product>(url, { stock: newStock }).pipe(
-      tap(updatedProduct => {
-        // Normaliza la respuesta del backend para asegurar consistencia
-        const normalizedProduct = this._normalizeProduct(updatedProduct);
-
-        // Actualiza la lista de productos en el BehaviorSubject
-        const currentProducts = this._products.getValue();
-        const index = currentProducts.findIndex(p => p.id === Number(productId));
-        if (index !== -1) {
-          currentProducts[index] = this._withAliases(normalizedProduct);
-          this._products.next([...currentProducts]);
-        }
-      })
+  updateStock(productId: string, newStock: number): Observable<any> {
+    // Fix: Comparación de ID robusta
+    const current = this._products.value.find(p => String(p.id) === String(productId));
+    if (!current) return of(null);
+    
+    const payload = this._mapToBackend({ ...current, stock: newStock });
+    // Fix: Usar PUT /productos/:id
+    return this.http.put(`${this.baseUrl}/${productId}`, payload).pipe(
+        tap(() => this.getAll().subscribe())
     );
   }
 }

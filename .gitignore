@@ -1,0 +1,18 @@
+# Angular CLI cache (IMPORTANTE: No subir a GitHub)
+.angular/
+
+# Dependencies
+/node_modules
+
+# Build output
+/dist
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.vscode/
