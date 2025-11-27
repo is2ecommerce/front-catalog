@@ -5,7 +5,8 @@ export interface Product {
   price: number;
   stock: number;
   category: string[];
-  image: string;
+  image: string;           // usado por product-card
+  imageUrl?: string;       // opcional, compatibilidad interna del servicio
   discount?: number;
   rating?: {
     rate: number;

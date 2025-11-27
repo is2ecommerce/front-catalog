@@ -13,41 +13,89 @@ export class ProductService {
   private readonly _products = new BehaviorSubject<Product[]>([]);
   products$ = this._products.asObservable();
 
+  // Categorías base del backend
+  private readonly baseCategories = ["Tecnología", "Audio", "Hogar", "Oficina", "Fotografía"];
+
+  categories$ = this.products$.pipe(
+    map(products => {
+      const categoryMap = new Map<string, number>();
+      this.baseCategories.forEach(c => categoryMap.set(c, 0));
+
+      products.forEach(p => {
+        (p.category || []).forEach(c => {
+          // normalizar acentos/mayúsculas
+          const norm = c.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+          const baseMatch = this.baseCategories.find(
+            bc => bc.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') === norm
+          );
+          const key = baseMatch || c;
+          categoryMap.set(key, (categoryMap.get(key) || 0) + 1);
+        });
+      });
+
+      return Array.from(categoryMap.entries())
+        .filter(([_, count]) => count >= 0)
+        .map(([name, count]) => ({ name, count }));
+    })
+  );
+
   constructor(private http: HttpClient) {
     this.getAll().subscribe();
   }
 
   private _normalizeProduct(p: any): Product {
+    if (!p) return {} as Product;
+
     const id = p.id ?? p._id ?? String(Date.now());
     const name = (p.nombre ?? p.name ?? '').toString();
     const price = (p.precio ?? p.price ?? 0) as number;
     const description = (p.descripcion ?? p.description ?? '').toString();
     const stock = (p.stock ?? 0) as number;
     
-    // Manejo seguro de categorías (Array vs String)
+    // categorías: garantizar array y mapear a base cuando coincida
     let category: string[] = [];
     if (p.categoria) {
-        category = Array.isArray(p.categoria) ? p.categoria : [String(p.categoria)];
+      category = Array.isArray(p.categoria) ? p.categoria : [String(p.categoria)];
     } else if (p.category) {
-        category = Array.isArray(p.category) ? p.category : [String(p.category)];
+      category = Array.isArray(p.category) ? p.category : [String(p.category)];
     }
+    category = category.map(c => {
+      const norm = c.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const baseMatch = this.baseCategories.find(
+        bc => bc.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') === norm
+      );
+      return baseMatch || c;
+    });
 
-    // Manejo seguro de imágenes
+    // imagen: soportar multimedia/imagen y rutas relativas
     let imageUrl = '';
     if (p.multimedia && Array.isArray(p.multimedia) && p.multimedia.length > 0) {
-        imageUrl = p.multimedia[0];
+      imageUrl = p.multimedia[0];
     } else {
-        imageUrl = p.imagen ?? p.imageUrl ?? '';
+      imageUrl = p.imagen ?? p.imageUrl ?? '';
+    }
+    if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('data:')) {
+      const cleanPath = imageUrl.startsWith('/') ? imageUrl.slice(1) : imageUrl;
+      imageUrl = cleanPath.startsWith('assets/') ? cleanPath : `assets/${cleanPath}`;
+    }
+    if (!imageUrl) {
+      imageUrl = 'https://via.placeholder.com/300x200?text=Sin+Imagen';
     }
 
-    // Fix: Construir objeto rating compatible con interfaces tipo FakeStoreAPI
     const ratingVal = p.calificacion ?? (typeof p.rating === 'number' ? p.rating : p.rating?.rate) ?? 0;
     const ratingObj = { rate: ratingVal, count: 0 };
 
     const normalized = {
-      id, name, price, description, imageUrl, stock, category,
+      id: p.id ?? p._id ?? String(Date.now()),
+      name: (p.nombre ?? p.name ?? '').toString(),
+      price: Number(p.precio ?? p.price ?? 0),
+      description: (p.descripcion ?? p.description ?? '').toString(),
+      stock: Number(p.stock ?? 0),
+      category,
+      image: imageUrl,          // CLAVE: el card usa 'image'
+      imageUrl,                 // compatibilidad interna
       rating: ratingObj
-    };
+    } as Product;
 
     // Aliases para compatibilidad con templates
     (normalized as any).nombre = name;
@@ -56,13 +104,12 @@ export class ProductService {
     (normalized as any).imagen = imageUrl;
 
     // Fix: 'as unknown as Product' silencia errores de tipado estricto si faltan propiedades opcionales
-    return normalized as unknown as Product;
+    return normalized;
   }
 
   private _mapToBackend(p: Partial<Product>): any {
     const payload: any = {};
     if (p.id) payload.id = p.id;
-    // Fix: Usar 'as any' para acceder a propiedades si el linter se queja
     payload.nombre = (p as any).name ?? (p as any).nombre;
     payload.descripcion = (p as any).description ?? (p as any).descripcion;
     payload.precio = (p as any).price ?? (p as any).precio;
@@ -72,7 +119,7 @@ export class ProductService {
     if (cats && Array.isArray(cats) && cats.length > 0) payload.categoria = cats[0];
     else if (typeof cats === 'string') payload.categoria = cats;
     
-    const img = (p as any).imageUrl ?? (p as any).imagen;
+    const img = (p as any).imageUrl ?? (p as any).imagen ?? (p as any).image;
     if (img) payload.multimedia = [img];
 
     return payload;
@@ -104,47 +151,60 @@ export class ProductService {
       );
     }
 
-    // 2. FILTROS (Usamos 'as any' en filters para evitar errores si la interfaz no coincide exactamente)
+    // 2. FILTROS
     const filters = params.filters as any;
-    if (filters && (filters.minPrice || filters.maxPrice || filters.inStock)) {
-        let filterParams = new HttpParams();
-        if (filters.minPrice) filterParams = filterParams.set('precio_min', filters.minPrice.toString());
-        if (filters.maxPrice) filterParams = filterParams.set('precio_max', filters.maxPrice.toString());
-        if (filters.inStock) filterParams = filterParams.set('disponibilidad', 'true');
-        
-        const cat = Array.isArray(filters.category) ? filters.category[0] : filters.category;
-        if(cat) filterParams = filterParams.set('categoria', String(cat));
+    const hasCategory = filters?.categories && filters.categories.length > 0;
+    const hasPrice = (filters?.minPrice != null) || (filters?.maxPrice != null);
+    const hasStock = filters?.inStock === true;
+    const hasRating = filters?.minRating != null && filters.minRating > 0;
 
-        return this.http.get<any[]>(`${this.baseUrl}/filter`, { params: filterParams }).pipe(
-            map(list => this._wrapListAsPage(list, params)),
-            catchError(() => of(this._emptyPage(params)))
-        );
+    if (hasCategory || hasPrice || hasStock || hasRating) {
+      let filterParams = new HttpParams();
+      if (filters.minPrice != null) filterParams = filterParams.set('precio_min', String(filters.minPrice));
+      if (filters.maxPrice != null) filterParams = filterParams.set('precio_max', String(filters.maxPrice));
+      if (filters.inStock) {
+        filterParams = filterParams.set('disponibilidad', 'true');
+        filterParams = filterParams.set('stock_min', '1');
+      }
+      if (filters.minRating != null) {
+        filterParams = filterParams.set('calificacion_min', String(filters.minRating));
+      }
+      if (hasCategory) {
+        // enviar solo la primera categoría seleccionada, en formato exacto
+        filterParams = filterParams.set('categoria', filters.categories[0]);
+      }
+
+      console.log('DEBUG: Enviando filtros al backend:', filterParams.toString());
+
+      return this.http.get<any[]>(`${this.baseUrl}/filter`, { params: filterParams }).pipe(
+        map(list => this._wrapListAsPage(list, params)),
+        catchError(err => {
+          console.error('Error en filtros:', err);
+          return of(this._emptyPage(params));
+        })
+      );
     }
 
-    // 3. PAGINACIÓN
+    // 3. PAGINACIÓN (Sin filtros)
     let httpParams = new HttpParams()
       .set('page', params.page.toString())
       .set('size', params.size.toString())
       .set('sortBy', params.sortBy || 'nombre')
       .set('sortDir', params.sortDir || 'asc');
 
-    if (params.filters && (params.filters as any).category) {
-        const catRaw = (params.filters as any).category;
-        const cat = Array.isArray(catRaw) ? catRaw[0] : catRaw;
-        if(cat) httpParams = httpParams.set('categoria', String(cat));
-    }
-
     return this.http.get<any>(this.baseUrl, { params: httpParams }).pipe(
       map(response => {
+        if (!response) return this._emptyPage(params);
+
         const content = (response.content || []).map((p: any) => this._normalizeProduct(p));
         return {
           content: content,
-          totalPages: response.totalPages,
-          totalElements: response.totalElements,
-          size: response.size,
-          number: response.number,
-          first: response.first,
-          last: response.last
+          totalPages: response.totalPages || 0,
+          totalElements: response.totalElements || 0,
+          size: response.size || params.size,
+          number: response.number || params.page,
+          first: response.first ?? true,
+          last: response.last ?? true
         };
       }),
       catchError(err => {
@@ -190,12 +250,11 @@ export class ProductService {
   }
 
   updateStock(productId: string, newStock: number): Observable<Product> {
-    // Fix: Casting a 'any' para evitar conflictos con Partial<Product>
     return this.update(productId, { stock: newStock } as any);
   }
 
   private _wrapListAsPage(list: any[], params: any): PaginatedResponse<Product> {
-      const products = list.map(p => this._normalizeProduct(p));
+      const products = (list || []).map(p => this._normalizeProduct(p));
       return {
           content: products,
           totalPages: 1,
