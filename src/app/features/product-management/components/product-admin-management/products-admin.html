@@ -1,38 +1,40 @@
 <div class="products-container">
-  <div class="breadcrumb">
-    <ul class="breadcrumb-list">
-      <li class="breadcrumb-item"><a routerLink="/">Inicio</a></li>
-      <li class="breadcrumb-item active">Productos</li>
-    </ul>
-  </div>
-
   <div class="products-header">
     <div class="title-row">
       <h2 class="section-title">Gestión de Productos</h2>
-      <button class="btn create-product-header" (click)="openCreate()">
+      <div>
+        <button class="btn create-product-header" (click)="openCreate()">
         <i class="bi bi-plus-lg"></i> Crear producto
-      </button>
-   </div>
-
-    <div class="header-controls">
-      <div class="view-toggle">
-        <button class="view-btn" [class.active]="viewMode === 'grid'" (click)="setView('grid')">
-          <i class="bi bi-grid"></i>
         </button>
-        <button class="view-btn" [class.active]="viewMode === 'list'" (click)="setView('list')">
-          <i class="bi bi-list"></i>
-        </button>
-      </div>
-
-      <button class="btn btn-log" (click)="openChangeLog()">
+        <button class="btn btn-log" (click)="openChangeLog()">
         <i class="bi bi-clock-history"></i> Ver historial
       </button>
-    </div>
+      </div>
+   </div>
   </div>
 
   <div class="search-results">
     <div class="results-header">
       <div class="results-count">{{ productos.length }} productos</div>
+      <div class="view-toggle">
+       <button class="view-btn" 
+        [class.active]="viewMode === 'grid'" 
+        (click)="setView('grid')">
+         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/>
+          </svg>
+        </button>
+
+        <button class="view-btn" 
+                [class.active]="viewMode === 'list'" 
+                (click)="setView('list')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+      </div>
       <div class="sort-options">
         <select [(ngModel)]="sortOption" (change)="sortProducts()">
           <option value="price-asc">Precio: Menor a Mayor</option>

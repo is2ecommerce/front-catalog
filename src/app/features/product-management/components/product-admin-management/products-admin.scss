@@ -1,17 +1,27 @@
 @use 'src/styles/variables' as *;
+@import 'src/styles/_components.scss'; // reutilizar mixins y reglas compartidas
 
-/* Contenedor */
+/* Ajustes para que products-admin coincida con estilos del form component */
+
+/* Contenedor principal similar al form */
 .products-container {
-  padding: 1rem;
+  max-width: auto;
+  margin: 1.5rem auto;
+  padding: 1.25rem;
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  color: var(--card-foreground);
+  font-family: var(--font-family-sans);
 }
 
-
-
+/* Header */
 .products-header {
-  /* asegurar layout del título + botón */
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .title-row {
@@ -21,41 +31,120 @@
   gap: 0.75rem;
 }
 
-/* botón principal en la cabecera (más compacto que new-product-btn) */
-.create-product-header {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.4rem 0.6rem;
-  background: var(--primary);
-  color: var(--primary-foreground);
-  border: 1px solid color-mix(in srgb, var(--primary) 80%, black);
-  border-radius: var(--radius);
-  cursor: pointer;
+.section-title {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--card-foreground);
   font-weight: 600;
-  font-size: 0.95rem;
 }
 
-/* Header controls (nuevo producto + toggle) */
+/* Botones */
+.create-product-header,
+.new-product-btn,
+.btn-log,
+.btn,
+.submit-btn {
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--radius);
+  font-weight: var(--font-weight-bold);
+  font-size: 0.95rem;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s;
+}
+
+.create-product-header,
+.new-product-btn,
+.submit-btn {
+  background-color: var(--primary,#f3a65b);
+  color: var(--primary-foreground);
+
+  &:not(:disabled):hover {
+    background-color: color-mix(in srgb, var(--primary) 90%, black);
+  }
+
+  &:disabled {
+    background-color: var(--muted);
+    cursor: not-allowed;
+  }
+}
+
+.btn-log {
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+  border: 1px solid var(--border);
+
+  &:not(:disabled):hover {
+    background-color: color-mix(in srgb, var(--muted) 90%, black);
+  }
+}
+
+.btn {
+  background-color: var(--primary,#f3a65b);
+  color: var(--color-background, black);
+
+  &:not(:disabled):hover {
+    background-color: color-mix(in srgb, var(--primary) 90%, black);
+  }
+
+  &:disabled {
+    background-color: var(--muted);
+    cursor: not-allowed;
+  }
+}
+
+/* Variantes */
+.create-product-header,
+.new-product-btn {
+  background: var(--primary, #f3a65b);
+  color: var(--background, black);
+  border-color: color-mix(in srgb, var(--primary) 80%, black);
+  border: 1px solid var(--border);
+
+  &:hover {
+    background: #d19a62 !important;
+    color: white !important;
+    box-shadow: $shadow-md;
+  }
+}
+
+.btn-log {
+  @include button-style($color-muted, $color-text);
+  background: var(--muted);
+  color: var(--muted-foreground);
+  border: 1px solid var(--border);
+}
+
+/* Controls */
 .header-controls {
   display: flex;
   gap: 0.75rem;
   align-items: center;
-  justify-content: space-between;
 }
 
-/* Botón nuevo producto */
-.new-product-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  background: var(--primary);
-  color: var(--primary-foreground);
-  border: 1px solid color-mix(in srgb, var(--primary) 80%, black);
-  border-radius: var(--radius);
-  cursor: pointer;
-  font-weight: 600;
+/* Buscar / resultados */
+.search-results {
+  margin-top: 0.5rem;
+
+
+  .results-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    gap: 1rem;
+
+    .results-count {
+      color: var(--muted-foreground);
+      font-size: 0.95rem;
+    }
+  }
+}
+
+.view-toggle {
+  margin-bottom: 0 !important;
 }
 
 /* Grid / List */
@@ -69,7 +158,7 @@
   display: block;
 }
 
-/* Tarjeta de producto */
+/* Product card */
 .product-card {
   background: var(--card);
   border: 1px solid var(--border);
@@ -77,74 +166,80 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  padding: 0;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: $shadow-md;
+  }
 }
 
-.product-image img {
+.product-image {
   width: 100%;
   height: 180px;
-  object-fit: cover;
+  background: var(--background);
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
 }
 
 .product-info {
   padding: 0.75rem 1rem;
+  color: var(--card-foreground);
+
+  .product-title {
+    margin: 0.25rem 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--card-foreground);
+  }
+
+  .product-description {
+    font-size: 0.95rem;
+    color: var(--muted-foreground);
+    margin: 0.5rem 0;
+  }
+
+  .product-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
 }
 
-.product-title {
-  margin: 0.25rem 0;
-  font-size: 1.1rem;
-}
-
-.product-description {
-  font-size: 0.95rem;
-  color: var(--muted-foreground);
-  margin: 0.5rem 0;
-}
-
-.product-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-top: 0.5rem;
-}
-
-.product-stock {
-  color: var(--muted-foreground);
-  font-size: 0.95rem;
-}
-
-/* Botones admin (mismo tamaño) */
+/* Admin buttons */
 .admin-actions {
   display: flex;
   gap: 0.5rem;
   margin-top: 0.75rem;
+
+  .btn {
+    padding: 0.45rem 0.6rem;
+    font-size: 0.9rem;
+  }
+
+  .btn-edit {
+    background: var(--primary, #f3a65b);
+    color: var(--background, black);
+    border-color: color-mix(in srgb, var(--primary) 80%, black);
+  }
+
+  .btn-delete {
+    background: var(--destructive);
+    color: var(--background, black);
+    border-color: color-mix(in srgb, var(--destructive) 80%, black);
+  }
 }
 
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: var(--radius);
-  border: 1px solid transparent;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.btn-edit {
-  background: var(--primary);
-  color: var(--primary-foreground);
-  border-color: color-mix(in srgb, var(--primary) 80%, black);
-}
-
-.btn-delete {
-  background: var(--destructive);
-  color: var(--primary-foreground);
-  border-color: color-mix(in srgb, var(--destructive) 80%, black);
-}
-
-/* Modal: forzar overlay sobre todo usando variables globales */
+/* Modal */
 .modal-backdrop {
   position: fixed !important;
   inset: 0;
@@ -152,26 +247,20 @@
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 99999 !important;
+  z-index: 9999 !important;
   padding: 1rem;
-  pointer-events: auto;
-  transform: none !important;
-  will-change: auto !important;
 }
 
-/* Contenedor del modal */
 .modal {
   position: relative;
-  z-index: 100000 !important;
   width: 100%;
-  max-width: 900px;
+  max-width: 700px;
   background: var(--card);
   color: var(--card-foreground);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
   overflow: hidden;
-  pointer-events: auto;
 }
 
 .modal.small {
@@ -184,14 +273,62 @@
   justify-content: space-between;
   padding: 1rem;
   border-bottom: 1px solid var(--border);
-  background: transparent;
 }
 
 .modal-body {
   padding: 1rem;
   max-height: 70vh;
   overflow: auto;
-  background: transparent;
+
+  .form-group {
+    margin-bottom: 1.25rem;
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: var(--card-foreground);
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--background);
+      color: var(--foreground);
+      box-sizing: border-box;
+
+      &:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba($color-primary, 0.08);
+      }
+    }
+
+    .error-message {
+      color: var(--destructive);
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+  }
+
+  .image-preview {
+    width: 100%;
+    max-height: 320px;
+    overflow: hidden;
+    border-radius: var(--radius);
+    margin-bottom: 0.75rem;
+
+    img {
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+      display: block;
+    }
+  }
 }
 
 .modal-footer {
@@ -200,45 +337,26 @@
   justify-content: flex-end;
   padding: 0.75rem 1rem;
   border-top: 1px solid var(--border);
-  background: transparent;
+
+  .submit-btn {
+    width: auto;
+    padding: 0.7rem 1rem;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border-radius: var(--radius);
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .btn-secondary {
+    background: var(--muted);
+    color: var(--muted-foreground);
+    border: 1px solid var(--border);
+  }
 }
 
-.close-btn {
-  background: transparent;
-  border: none;
-  font-size: 1.25rem;
-  cursor: pointer;
-  color: var(--muted-foreground);
-}
-
-/* Botones dentro del modal usando variables globales */
-.btn-secondary {
-  background: var(--muted);
-  color: var(--muted-foreground);
-  border: 1px solid var(--border);
-}
-
-.btn-danger {
-  background: var(--destructive);
-  color: var(--primary-foreground);
-  border: 1px solid color-mix(in srgb, var(--destructive) 80%, black);
-}
-
-/* Botón historial */
-.btn-log {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.45rem 0.7rem;
-  background: var(--muted);
-  color: var(--muted-foreground);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  cursor: pointer;
-  font-weight: 600;
-}
-
-/* Lista del changelog dentro de la modal */
+/* Changelog */
 .changelog-list {
   list-style: none;
   margin: 0;
@@ -247,37 +365,42 @@
   flex-direction: column;
   gap: 0.75rem;
 }
+
 .changelog-item {
   padding: 0.5rem;
   border-radius: var(--radius);
-  background: rgba(0,0,0,0.03);
-  border: 1px solid rgba(0,0,0,0.04);
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.04);
 }
+
 .changelog-meta {
   font-size: 0.85rem;
   color: var(--muted-foreground);
   margin-bottom: 0.25rem;
 }
+
 .changelog-message {
   font-size: 0.95rem;
 }
 
-/* Ajustes responsivos */
-
-@media (max-width: 520px) {
-  .btn-log {
-    padding: 0.45rem;
-    font-weight: 700;
-  }
-  .btn-log i + span, .btn-log > span { display: none; }
-}
-
+/* Responsive */
 @media (max-width: 640px) {
-  
+  .products-container {
+    padding: 0.75rem;
+    margin: 1rem;
+  }
+
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
   .header-controls {
     flex-direction: column;
     align-items: stretch;
   }
+
+  .create-product-header,
   .new-product-btn {
     width: 100%;
     justify-content: center;
