@@ -13,4 +13,9 @@ export class ProductCardComponent implements OnInit {
   @Input() product!: Product;
 
   ngOnInit(): void {}
+
+  onImgError(evt: Event) {
+    const img = evt.target as HTMLImageElement;
+    img.src = 'https://placehold.co/600x400?text=Sin+imagen';
+  }
 }

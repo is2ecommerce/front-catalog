@@ -1,6 +1,6 @@
 <div class="product-card">
   <div class="image-container">
-    <img [src]="product.image" [alt]="product.name" class="product-image">
+    <img [src]="product.image" [alt]="product.name" class="product-image" (error)="onImgError($event)">
     <span *ngIf="product.discount" class="status-badge discount-badge">-{{ product.discount }}%</span>
     <span *ngIf="product.stock === 0" class="status-badge sold-out">Agotado</span>
   </div>
@@ -18,8 +18,19 @@
       </ng-template>
     </div>
 
-    <div class="rating" *ngIf="product.rating">
-      <span class="rating-value">{{ product.rating.rate }}</span>
+    <div class="meta-blocks">
+      <div class="meta-item">
+        <strong>Precio:</strong>
+        <span>{{ product.price | currency:'USD' }}</span>
+      </div>
+      <div class="meta-item">
+        <strong>Puntuación:</strong>
+        <span>{{ product.rating?.rate ?? 0 }}</span>
+      </div>
+      <div class="meta-item">
+        <strong>Stock:</strong>
+        <span>{{ product.stock ?? 0 }}</span>
+      </div>
     </div>
   </div>
 </div>

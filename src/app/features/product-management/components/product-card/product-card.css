@@ -112,6 +112,26 @@
   color: var(--muted-foreground);
 }
 
+/* Meta info blocks for Precio, Puntuación, Stock */
+.meta-blocks {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: var(--card-foreground);
+}
+
+.meta-item strong {
+  font-weight: 600;
+}
+
 
 .add-to-cart-button {
   background-color: var(--brand);

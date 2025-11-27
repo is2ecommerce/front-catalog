@@ -68,8 +68,9 @@
     border: 1px solid var(--gray-dark, #ccc); /* Borde visible */
     border-right: none; /* Quitamos el borde derecho para que parezca un solo elemento */
     border-radius: 6px 0 0 6px; /* Borde redondeado solo a la izquierda */
-    background-color: var(--white, #fff); 
-    color: var(--foreground, #333);
+    background-color: #fff; /* forzar fondo claro */
+    color: #111; /* forzar texto oscuro para visibilidad */
+    caret-color: #111; /* cursor visible */
     outline: none;
     font-size: 0.95rem;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -82,7 +83,7 @@
 }
 
 .search-input::placeholder {
-    color: var(--gray-dark, #666);
+    color: #666; /* forzar placeholder visible */
 }
 
 .search-button {
